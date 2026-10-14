@@ -3,7 +3,7 @@ import {installAccount} from './account-ui.mjs';
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.10-win-x64.zip';
+const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.11-win-x64.zip';
 const DEFAULT_ENDPOINT='https://shixu-sync.zmz1998.workers.dev';
 let pair=null,expired=false;
 let busy=false,applying=false,lastSync=0,status='未登录 · 本机保存',paused=localStorage.getItem('shixu-sync-paused')==='true';
