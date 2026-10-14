@@ -1,4 +1,4 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.5-3';
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
