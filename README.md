@@ -1,10 +1,14 @@
-# 拾序 · 网页工作台
+# 拾序 · 官网与网页工作台
 
 从拾序 HTML demo 延伸的网页端，保留浅色/深色设计、待办、日程、便签、日历、专注、本地助手与确认后执行的排期提案。
 
-网站：https://babyzmz.github.io/Shixu-Web/
+官网：https://babyzmz.github.io/Shixu-Web/
 
-Windows 版 
+网页工作台：https://babyzmz.github.io/Shixu-Web/app/
+
+下载页：https://babyzmz.github.io/Shixu-Web/download.html
+
+Windows 版
 
 ## 私有设备同步
 
@@ -18,4 +22,6 @@ Windows 版
 
 GitHub Pages 仅发布静态资源。用户数据不放在 GitHub，Cloudflare 的管理凭据也不进入此仓库。推送到 main 后通过 GitHub Actions 部署。
 
-本地验证：`node check.mjs`。可用静态 HTTP 服务器预览；不需要框架、CDN、第三方运行时或 npm 安装。
+本地验证：`node check.mjs`。官网采用本地托管的 GSAP 3.15.0 与 ScrollTrigger，具备手机端和减少动态效果的纵向阅读方式。工作台无额外外部运行时依赖。
+
+官网场景使用现有应用的示例事项截图，不包含用户数据。`app/` 保留原来的浏览器存储键和配对信息，拥有独立的离线缓存范围。根路径的旧 Service Worker 会退役缓存，不删除个人记录。

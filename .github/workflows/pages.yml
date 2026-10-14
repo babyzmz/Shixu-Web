@@ -27,7 +27,8 @@ jobs:
       - name: Stage only public static assets
         run: |
           mkdir _site
-          cp index.html web.js sync.mjs web.css icon.svg manifest.webmanifest sw.js _site/
+          cp index.html download.html site.css site.js sw.js manifest.webmanifest _site/
+          cp -R app assets vendor _site/
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
