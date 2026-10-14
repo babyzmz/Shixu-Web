@@ -37,6 +37,7 @@ app.syncSettings=()=>accounts.view();
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
 function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);}
 window.addEventListener('shixu-render',()=>{
+ const profile=$('.profile-name');if(profile)profile.textContent=pair?.username||'我的空间';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
  const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-action="settings" title="打开同步设置">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a><button class="icon-btn" aria-label="打开侧边助手" data-web-action="assistant">${window.ic('sparkles')}</button>`;header.prepend(links);}
  if(assistantOpen&&$('#main .web-assistant-main'))app.hideAssistant();renderChat();
