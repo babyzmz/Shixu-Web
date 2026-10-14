@@ -1,9 +1,9 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.6-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.8-1';
 import {installAccount} from './account-ui.mjs';
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.7-win-x64.zip';
+const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.8-win-x64.zip';
 const DEFAULT_ENDPOINT='https://shixu-sync.zmz1998.workers.dev';
 let pair=null,expired=false;
 let busy=false,applying=false,lastSync=0,status='未登录 · 本机保存',paused=localStorage.getItem('shixu-sync-paused')==='true';
@@ -33,13 +33,14 @@ const renderAI=window.renderAI;
 window.renderAI=function(){app.hideAssistant();return `<div class="page-head"><h1>全局助手</h1></div><section class="card card-pad web-assistant-main">${chatHTML(true)}</section><details style="margin-top:24px" id="planning-details"><summary class="text-btn">待办拆解与提案</summary>${renderAI()}</details>`;};
 const accounts=installAccount(app,{chat(value){if(value!==undefined){messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
 pair=accounts.session;if(pair)status='已登录 · '+pair.username;
-app.syncSettings=()=>accounts.view();
+app.syncSettings=()=>`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`;
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
 function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);}
 window.addEventListener('shixu-render',()=>{
  const profile=$('.profile-name');if(profile)profile.textContent=pair?.username||'我的空间';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
- const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-action="settings" title="打开同步设置">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a><button class="icon-btn" aria-label="打开侧边助手" data-web-action="assistant">${window.ic('sparkles')}</button>`;header.prepend(links);}
+ const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a><button class="icon-btn" aria-label="打开侧边助手" data-web-action="assistant">${window.ic('sparkles')}</button>`;header.prepend(links);}
+ const profileButton=$('.profile-name');if(profileButton){const entry=document.createElement('button');entry.className='text-btn account-entry';entry.dataset.webAction='account-open';entry.textContent=pair?.username||'登录账户';profileButton.replaceWith(entry);}
  if(assistantOpen&&$('#main .web-assistant-main'))app.hideAssistant();renderChat();
 });
 async function responseJSON(response){const reader=response.body.getReader();let length=0;const chunks=[];while(true){const {value,done}=await reader.read();if(done)break;length+=value.length;if(length>1_600_000){reader.cancel();throw Error('同步响应过大');}chunks.push(value);}const bytes=new Uint8Array(length);let p=0;for(const c of chunks){bytes.set(c,p);p+=c.length;}return JSON.parse(new TextDecoder().decode(bytes));}
@@ -61,8 +62,8 @@ document.addEventListener('click',async e=>{
  case'source':app.hideAssistant();app.locate(button.dataset.id);break;
  case'plan':app.plan();$('#planning-details').open=true;$('#ai-input')?.focus();break;
  case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;case'widgets':app.nav('widgets');break;
- case'sync':if(paused)app.settings();else await sync();break;
- case'keep-local':case'keep-cloud':if(!confirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();app.settings();break;
+ case'sync':if(paused)accounts.open();else await sync();break;
+ case'keep-local':case'keep-cloud':if(!confirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();accounts.open();break;
  }}catch(error){app.toast(error.message);}
 });
 document.addEventListener('submit',e=>{if(e.target.matches('.web-chat-form')){e.preventDefault();send(e.target.querySelector('textarea').value);}});
@@ -86,4 +87,4 @@ timeDialog.addEventListener('click',e=>{const action=e.target.dataset.time;if(!a
 new MutationObserver(rollingInputs).observe(document.body,{childList:true,subtree:true});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 setInterval(()=>{if(!document.hidden)sync();},60000);window.addEventListener('online',()=>sync());
-app.render();renderChat();rollingInputs();if(location.hash==='#account')app.settings();if(pair)sync();
+app.render();renderChat();rollingInputs();if(location.hash==='#account')accounts.open();if(pair)sync();
