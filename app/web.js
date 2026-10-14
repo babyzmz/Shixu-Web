@@ -1,11 +1,12 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.5-5';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.6-1';
+import {installAccount} from './account-ui.mjs';
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.5-win-x64.zip';
+const DOWNLOAD='https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.6-win-x64.zip';
 const DEFAULT_ENDPOINT='https://shixu-sync.zmz1998.workers.dev';
-let pair=null;try{pair=JSON.parse(localStorage.getItem('shixu-pair'));}catch{}
-let busy=false,applying=false,lastSync=0,status=pair?'等待同步':'本机保存 · 未配对',paused=localStorage.getItem('shixu-sync-paused')==='true';
+let pair=null,expired=false;
+let busy=false,applying=false,lastSync=0,status='未登录 · 本机保存',paused=localStorage.getItem('shixu-sync-paused')==='true';
 let messages=[];try{messages=JSON.parse(sessionStorage.getItem('shixu-chat')||'[]');if(!Array.isArray(messages))messages=[];}catch{}
 let assistantOpen=false;
 const column=document.createElement('aside');column.className='web-assistant';column.setAttribute('aria-label','拾序助手');$('.workspace').append(column);
@@ -30,10 +31,10 @@ app.hideAssistant=()=>{assistantOpen=false;$('.workspace').classList.remove('ass
 function showAssistant(){if($('#main .web-assistant-main')){app.hideAssistant();renderChat();return;}assistantOpen=!assistantOpen;$('.workspace').classList.toggle('assistant-open',assistantOpen);renderChat();}
 const renderAI=window.renderAI;
 window.renderAI=function(){app.hideAssistant();return `<div class="page-head"><h1>全局助手</h1></div><section class="card card-pad web-assistant-main">${chatHTML(true)}</section><details style="margin-top:24px" id="planning-details"><summary class="text-btn">待办拆解与提案</summary>${renderAI()}</details>`;};
-function syncView(){return `<section><h3>网页与桌面同步</h3><p class="sync-detail">事项与分类上传前加密，API 密钥和桌面窗口位置留在本机。先在桌面“设置 → 网页与桌面同步”建立私有空间，再粘贴配对码。持有码可访问该空间，请保存在自己的设备。</p><textarea class="pair-box" id="web-pair-code" aria-label="设备配对码" placeholder="粘贴 shixu1. 开头的完整配对码"></textarea><div class="sync-actions"><button class="btn primary sm" data-web-action="pair">连接私有空间</button><button class="btn sm" data-web-action="sync">立即同步</button><button class="btn sm" data-web-action="disconnect">断开</button></div><p id="sync-state" class="sync-detail">${escape(status)}</p>${paused?'<div class="sync-actions"><button class="btn sm" data-web-action="keep-local">冲突：保留本机</button><button class="btn sm" data-web-action="keep-cloud">冲突：使用云端</button></div><p class="sync-detail">处理前请在两端导出备份；同一记录的并发修改不会自动覆盖。</p>':''}<p class="sync-detail">配对后每分钟同步一次。清除浏览器数据前请导出备份。</p></section><div class="settings-row"><div><h3>Windows 桌面端 0.4.5</h3><p>原生桌面组件、托盘提醒、全局助手与自动更新。</p></div><a class="btn sm" href="${DOWNLOAD}" rel="noopener noreferrer">下载 win-x64</a></div>`;}
-app.syncSettings=syncView;
-const originalHelp=window.openHelp;
-window.openHelp=()=>{originalHelp();$('#modal-root .modal-content').innerHTML='<div class="stack"><h3>一份事项，在网页与桌面继续</h3><p class="small">先在 Windows 0.4.5 设置中建立私有空间，复制配对码，再到网页设置连接。每位同事使用自己的空间。</p><h3>查询与提案</h3><p class="small">助手可以查询今天、本周、已完成记录，检查时间冲突，或准备记录、拆解和排期候选。候选确认前不会写入。记录链接会定位到日历并短暂高亮。</p><h3>数据与提醒</h3><p class="small">未配对时保存在当前浏览器，配对后每分钟加密同步事项与分类。请定期导出 JSON 备份。网页关闭时不保证提醒；真正的桌面组件与系统托盘提醒请使用 Windows 版。</p><p class="small muted">网页助手当前为本地规则模式，桌面的云模型 API 密钥不会上传或复制到网页。</p></div>';};
+const accounts=installAccount(app,{chat(value){if(value!==undefined){messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
+pair=accounts.session;if(pair)status='已登录 · '+pair.username;
+app.syncSettings=()=>accounts.view();
+window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
 function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);}
 window.addEventListener('shixu-render',()=>{
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
@@ -41,9 +42,9 @@ window.addEventListener('shixu-render',()=>{
  if(assistantOpen&&$('#main .web-assistant-main'))app.hideAssistant();renderChat();
 });
 async function responseJSON(response){const reader=response.body.getReader();let length=0;const chunks=[];while(true){const {value,done}=await reader.read();if(done)break;length+=value.length;if(length>1_600_000){reader.cancel();throw Error('同步响应过大');}chunks.push(value);}const bytes=new Uint8Array(length);let p=0;for(const c of chunks){bytes.set(c,p);p+=c.length;}return JSON.parse(new TextDecoder().decode(bytes));}
-async function request(method,body,revision){const response=await fetch(pair.endpoint+'/v1/space',{method,headers:{Authorization:'Bearer '+await authToken(pair.token),...(body?{'Content-Type':'application/json','If-Match':String(revision)}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:'error'});const data=await responseJSON(response);if(!response.ok&&!(method==='GET'&&response.status===404))throw Error(data.error||'HTTP '+response.status);return data;}
+async function request(method,body,revision){const response=await fetch(pair.endpoint+'/v2/account/data',{method,headers:{Authorization:'Bearer '+pair.session,...(body?{'Content-Type':'application/json','If-Match':String(revision)}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:'error'});const data=await responseJSON(response);if(!response.ok&&!(method==='GET'&&response.status===404)){if(response.status===401)expired=true;throw Error(data.error||'HTTP '+response.status);};return data;}
 async function sync(){
- if(!pair||busy||paused)return;busy=true;status='正在加密同步…';repaintStatus();const local=app.cloudDoc();
+ if(!pair||expired||busy||accounts.busy||paused)return;busy=true;status='正在加密同步…';repaintStatus();const local=app.cloudDoc();
  try{
  const before=JSON.parse(localStorage.getItem('shixu-sync-baseline')||JSON.stringify(empty()));let cloud=await request('GET');const remote=cloud.envelope?await decrypt(cloud.envelope,pair.token):empty();localStorage.setItem('shixu-sync-remote',JSON.stringify(remote));
  const merged=merge(before,local,remote);if(!cloud.envelope||canonical(merged)!==canonical(remote))cloud=await request('PUT',await encrypt(merged,pair.token),cloud.revision);
@@ -51,17 +52,15 @@ async function sync(){
  localStorage.setItem('shixu-sync-baseline',JSON.stringify(merged));status='已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});lastSync=Date.now();
  }catch(e){if(e.conflict){paused=true;localStorage.setItem('shixu-sync-paused','true');}status='同步未完成：'+e.message;app.toast(status);}finally{busy=false;repaintStatus();}
 }
-async function connect(code){if(pair)throw Error('已配对，请先断开，避免切换空间');const candidate=parsePair(code);if(candidate.endpoint!==DEFAULT_ENDPOINT)throw Error('此版本只连接拾序官方测试同步服务');if(!confirm('将本机事项与分类加密同步到 '+new URL(candidate.endpoint).hostname+'？API 密钥不会上传。'))return;pair=candidate;localStorage.setItem('shixu-pair',JSON.stringify(pair));localStorage.setItem('shixu-sync-baseline',JSON.stringify(empty()));localStorage.removeItem('shixu-sync-paused');paused=false;await sync();app.settings();}
 document.addEventListener('click',async e=>{
  const button=e.target.closest('[data-web-action]');if(!button)return;const action=button.dataset.webAction;e.preventDefault();
- try{switch(action){
+ try{if(await accounts.handle(action))return;switch(action){
  case'assistant':showAssistant();break;case'close-assistant':app.hideAssistant();break;
  case'clear-chat':messages=[];saveMessages();renderChat();break;
  case'source':app.hideAssistant();app.locate(button.dataset.id);break;
  case'plan':app.plan();$('#planning-details').open=true;$('#ai-input')?.focus();break;
  case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;case'widgets':app.nav('widgets');break;
- case'pair':await connect($('#web-pair-code').value.trim());break;case'sync':if(paused)app.settings();else await sync();break;
- case'disconnect':if(busy)throw Error('请等待当前同步结束');if(confirm('断开此浏览器的同步？本机事项保留，云端空间未删除。')){pair=null;localStorage.removeItem('shixu-pair');status='已断开 · 本机记录保留';app.settings();app.render();}break;
+ case'sync':if(paused)app.settings();else await sync();break;
  case'keep-local':case'keep-cloud':if(!confirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();app.settings();break;
  }}catch(error){app.toast(error.message);}
 });
@@ -86,4 +85,4 @@ timeDialog.addEventListener('click',e=>{const action=e.target.dataset.time;if(!a
 new MutationObserver(rollingInputs).observe(document.body,{childList:true,subtree:true});
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 setInterval(()=>{if(!document.hidden)sync();},60000);window.addEventListener('online',()=>sync());
-app.render();renderChat();rollingInputs();if(pair)sync();
+app.render();renderChat();rollingInputs();if(location.hash==='#account')app.settings();if(pair)sync();
