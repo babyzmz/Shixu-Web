@@ -1,4 +1,5 @@
 const enc = new TextEncoder(); const dec = new TextDecoder();
+export const authToken=async token=>encode(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode('shixu:auth:'+token))));
 export const encode = bytes => { let text='';for(const b of bytes)text+=String.fromCharCode(b);return btoa(text).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,''); };
 export const decode = text => Uint8Array.from(atob(text.replaceAll('-','+').replaceAll('_','/')),x=>x.charCodeAt(0));
 const key = async token => {if(decode(token).length!==32)throw Error('配对码不正确');return crypto.subtle.importKey('raw',await crypto.subtle.digest('SHA-256',enc.encode('shixu:encryption:'+token)), 'AES-GCM',false,['encrypt','decrypt']);};
