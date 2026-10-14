@@ -4,7 +4,7 @@
 
 网站：https://babyzmz.github.io/Shixu-Web/
 
-Windows 版：https://pub-bbcf2c5767b64bb9a7dd1195e93902b1.r2.dev/Shixu-0.4.5-win-x64.zip
+Windows 版 
 
 ## 私有设备同步
 
