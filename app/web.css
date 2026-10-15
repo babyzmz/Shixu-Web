@@ -5,6 +5,7 @@
 @media(max-width:1050px){.save-state,.header-help{display:none}.topbar{padding-inline:20px}.web-download{font-size:10px}}
 @media(max-width:700px){.workspace.assistant-open{grid-template-columns:1fr}.workspace.assistant-open>#main{display:none}.web-assistant{grid-column:1;width:100%;top:73px;border-left:0;height:calc(100dvh - 137px)}.sync-indicator{max-width:70px}.topbar{gap:8px}.header-right{gap:6px}.web-download{display:none}#main{padding:24px 16px}.page-head h1{font-size:26px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){button,.btn,.nav-item,.icon-btn,.rolling-trigger{scale:1!important}.icon-btn svg{translate:none!important}}
 
 /* Readable system typography without downloading fonts or scaling the page. */
 :root{--font:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
@@ -33,3 +34,14 @@ h1{font-size:32px;line-height:1.35}.small,.tiny,.eyebrow,.chip,.badge{font-size:
 
 .account-panel .form-field{display:grid;gap:8px;margin:16px 0}.account-panel input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);font:inherit}.account-panel details{margin:20px 0}.account-recovery{padding:18px;border:1px solid var(--line);border-radius:14px;margin:20px 0}.account-recovery p{font-size:14px;line-height:1.7}
 .account-dialog{max-width:460px}.account-dialog .modal-content{padding:28px}.account-dialog .account-panel h3{font-size:20px}.account-dialog .account-panel input{min-height:48px}.account-dialog .sync-actions{margin-top:22px}.account-dialog .sync-detail{font-size:14px;line-height:1.8}.account-entry{font-size:14px;font-weight:600;text-align:left}
+
+/* Small, interruptible feedback. Individual scale leaves widget drag transforms intact. */
+:root{--motion-settle:cubic-bezier(.2,.8,.25,1.2);--motion-out:cubic-bezier(.2,.8,.2,1)}
+.overlay,.modal,.toast{animation:none}
+button,.btn,.nav-item,.icon-btn,.rolling-trigger{transition:scale 220ms var(--motion-settle),background-color 140ms ease,border-color 140ms ease,color 140ms ease;transform-origin:center}
+html[data-input="pointer"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger):active:not(:disabled){scale:.975;transition-duration:80ms}
+html[data-input="keyboard"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger){transition:none}
+.form-field :is(input,textarea,select),.chat-input{transition:border-color 140ms ease,box-shadow 140ms ease}
+.task-row,.note-card,.timeline-block{transition:background-color 140ms ease,border-color 140ms ease}
+@media(hover:hover) and (pointer:fine){.icon-btn:hover svg{translate:0 -1px}.icon-btn svg{transition:translate 180ms var(--motion-settle)}.btn.primary:hover{box-shadow:0 3px 12px #7165df1a}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

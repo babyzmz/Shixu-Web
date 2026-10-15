@@ -1,5 +1,8 @@
 (()=>{
   'use strict';
+  document.documentElement.dataset.input='keyboard';
+  document.addEventListener('pointerdown',()=>{document.documentElement.dataset.input='pointer';},{capture:true,passive:true});
+  document.addEventListener('keydown',()=>{document.documentElement.dataset.input='keyboard';},true);
   if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)'),story=document.querySelector('.product-story'),buttons=[...document.querySelectorAll('[data-scene]')];
   let storyTrigger=null,active=-1;
@@ -39,7 +42,11 @@
       return()=>{storyTrigger=null;active=-1;story.classList.remove('story-enhanced');scenes.forEach(scene=>scene.removeAttribute('aria-hidden'));};
     });
     window.addEventListener('load',()=>ScrollTrigger.refresh(),{once:true});
-    document.querySelectorAll('details').forEach(details=>details.addEventListener('toggle',()=>ScrollTrigger.refresh()));
+    document.querySelectorAll('details').forEach(details=>details.addEventListener('toggle',()=>{
+      ScrollTrigger.refresh();
+      if(details.open&&!reduced.matches&&document.documentElement.dataset.input==='pointer')
+        gsap.fromTo([...details.children].filter(el=>el.tagName!=='SUMMARY'),{opacity:.7,y:4},{opacity:1,y:0,duration:.2,ease:'power2.out',overwrite:true,clearProps:'transform,opacity'});
+    }));
   }
   const download=document.querySelector('[data-download]');
   if(download)download.addEventListener('click',()=>{let note=document.querySelector('.download-state');if(!note){note=document.createElement('p');note.className='download-state';note.setAttribute('role','status');download.after(note);}note.textContent='已打开下载链接。下载完成后，解压全部文件再运行。';});
