@@ -20,7 +20,7 @@ h1,h2,h3{align-self:start}
 .inline-link>span,.button>span{display:inline-block;transition:translate 200ms cubic-bezier(.2,.8,.25,1.2)}
 .wordmark img{transition:rotate 240ms cubic-bezier(.2,.8,.25,1.2),scale 240ms cubic-bezier(.2,.8,.25,1.2)}
 @media(hover:hover) and (pointer:fine){.wordmark:hover img{rotate:-3deg;scale:1.025}}
-@media(hover:hover) and (pointer:fine){.button:hover>span{translate:0 2px}.scene-nav button:hover{scale:1.02}.faq-item summary{transition:color 140ms ease}.faq-item summary:hover{color:var(--accent)}}
+@media(hover:hover) and (pointer:fine){.button:hover>span{translate:0 2px}.scene-nav button:hover{scale:1.02}.question-list summary{transition:color 140ms ease}.question-list summary:hover{color:var(--accent)}}
 html[data-input="keyboard"] :is(.button,.scene-nav button,.inline-link>span,.button>span){transition:none;scale:1;translate:none}
 @media(prefers-reduced-motion:reduce){.button,.scene-nav button,.inline-link>span,.button>span{transition:none!important;scale:1!important;translate:none!important;transform:none!important}}
 @media(prefers-reduced-motion:reduce){.wordmark img{transition:none!important;rotate:none!important;scale:1!important}}
