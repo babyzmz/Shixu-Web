@@ -1,5 +1,5 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.12-1';
-import {installAccount} from './account-ui.mjs';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.12-2';
+import {installAccount} from './account-ui.mjs?v=0.4.12-2';
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

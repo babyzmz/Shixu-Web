@@ -56,7 +56,7 @@
 @media(max-width:1200px){.today-categories{gap:10px;flex-wrap:wrap}.today-category-chip{padding:7px 9px}}
 @media(max-width:640px){.today-categories{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px;margin:0 0 18px}.today-category-options{grid-column:1/-1;grid-row:2;gap:5px}.today-category-add{grid-column:2;grid-row:1;min-height:28px!important}.today-category-chip{min-height:38px;padding:7px 10px}.today-category-name{max-width:145px}.today-list-tools{width:100%;justify-content:space-between}.today-section-toolbar{gap:10px}.today-group-switch button{min-height:32px}.today-category-heading .group-add{min-height:32px}}
 </style>
-<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./web.css?v=0.4.12-1"><meta name="robots" content="noindex,nofollow"></head>
+<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./web.css?v=0.4.12-2"><meta name="robots" content="noindex,nofollow"></head>
 <body>
 <div id="app"><aside class="sidebar" id="sidebar"></aside><div class="workspace"><header class="topbar" id="topbar"></header><main id="main" aria-label="工作区"></main></div></div>
 <div class="nav-scrim" id="nav-scrim"></div><nav class="mobile-nav" id="mobile-nav" aria-label="移动端导航"></nav>
@@ -390,4 +390,4 @@ window.ShixuWeb={
  prepare:text=>{aiText=text;navTo('ai');aiDrafts=splitRequirements(text).map(d=>({...d,type:/活动|会议|开会|评审|预约/.test(d.source)?'event':d.type,title:d.title.replace(/^(有|要|帮我|记下)\s*/,''),category:state.categories.some(c=>c.id===d.category)?d.category:state.categories[0].id}));aiAnalyzed=true;aiCommitted=false;render();document.querySelector('#planning-details').open=true;},
  openEditor, syncSettings:()=>'',hideAssistant:()=>{}
 };
-</script><script type="module" src="./web.js?v=0.4.12-1"></script></body></html>
+</script><script type="module" src="./web.js?v=0.4.12-2"></script></body></html>
