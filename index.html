@@ -4,58 +4,59 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#17181f"><meta name="description" content="拾序，把零散的待办、日程和便签安放在一处。Windows 桌面组件与网页工作台，让安排跟着你。">
   <title>拾序 — 拾起琐事，排好一天</title>
-  <link rel="icon" href="./assets/icon.svg"><link rel="stylesheet" href="./site.css?v=3">
-  <script defer src="./vendor/gsap.min.js"></script><script defer src="./vendor/ScrollTrigger.min.js"></script><script defer src="./site.js?v=3"></script>
+  <script>try{var l=new URLSearchParams(location.search).get('lang')||localStorage.getItem('shixu-lang')||(/^zh\b/i.test(navigator.language||'zh')?'zh':'en');if(l==='en'){document.documentElement.lang='en';document.documentElement.className+=' i18n-pending';setTimeout(function(){document.documentElement.classList.remove('i18n-pending')},2500)}}catch(e){}</script>
+  <link rel="icon" href="./assets/icon.svg"><link rel="stylesheet" href="./site.css?v=4">
+  <script defer src="./vendor/gsap.min.js"></script><script defer src="./vendor/ScrollTrigger.min.js"></script><script defer src="./site.js?v=4"></script>
 </head>
-<body>
-<a class="skip-link" href="#main">跳到主要内容</a>
+<body data-page="home">
+<a class="skip-link" href="#main" data-i18n="skip">跳到主要内容</a>
 <header class="site-header">
-  <a class="wordmark" href="./" aria-label="拾序首页"><img src="./assets/icon.svg" width="38" height="38" alt=""><span>拾序</span></a>
-  <nav aria-label="官网导航"><a href="#experience">产品体验</a><a href="./app/">网页端 <span aria-hidden="true">↗</span></a><a href="./download.html">桌面端</a></nav>
-  <a class="button header-action" href="./download.html">下载拾序 <span aria-hidden="true">↗</span></a>
+  <a class="wordmark" href="./" aria-label="拾序首页" data-i18n-attr="aria-label:brand.home"><img src="./assets/icon.svg" width="38" height="38" alt=""><span data-i18n="brand">拾序</span></a>
+  <nav aria-label="官网导航" data-i18n-attr="aria-label:nav.label"><a href="#experience" data-i18n="nav.tour">产品体验</a><a href="./app/" data-i18n="nav.web">网页端 <span aria-hidden="true">↗</span></a><a href="./download.html" data-i18n="nav.desktop">桌面端</a></nav>
+  <a class="button header-action" href="./download.html" data-i18n="cta.get">下载拾序 <span aria-hidden="true">↗</span></a>
 </header>
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero-copy">
-      <h1 id="hero-title"><span class="title-line"><span>拾起琐事。</span></span><span class="title-line"><span>排好一天。</span></span></h1>
-      <div class="hero-intro"><p>待办、日程、便签，一处安放。<br>把下一步留在眼前，把时间留给自己。</p><a class="button large" href="./download.html">下载 Windows 版 <span aria-hidden="true">↓</span></a><a class="inline-link" href="./app/">先打开网页端 <span aria-hidden="true">↗</span></a></div>
+      <h1 id="hero-title"><span class="title-line"><span data-i18n="hero.l1">拾起琐事。</span></span><span class="title-line"><span data-i18n="hero.l2">排好一天。</span></span></h1>
+      <div class="hero-intro"><p data-i18n="hero.intro">待办、日程、便签，一处安放。<br>把下一步留在眼前，把时间留给自己。</p><a class="button large" href="./download.html" data-i18n="cta.windows">下载 Windows 版 <span aria-hidden="true">↓</span></a><a class="inline-link" href="./app/" data-i18n="cta.tryWeb">先打开网页端 <span aria-hidden="true">↗</span></a></div>
     </div>
     <div class="hero-stage" data-ui>
-      <img class="hero-screen" src="./assets/today.jpg" width="1800" height="1250" alt="拾序今日工作台：重点待办、日程时间线和便签集中显示" fetchpriority="high">
+      <img class="hero-screen" src="./assets/today.jpg" width="1800" height="1250" alt="拾序今日工作台：重点待办、日程时间线和便签集中显示" data-i18n-attr="alt:hero.alt" fetchpriority="high">
     </div>
-    <div class="hero-caption"><span>你的下一步，已经有了位置。</span><a href="#experience">向下探索 <span aria-hidden="true">↓</span></a></div>
+    <div class="hero-caption"><span data-i18n="hero.caption">你的下一步，已经有了位置。</span><a href="#experience" data-i18n="hero.explore">向下探索 <span aria-hidden="true">↓</span></a></div>
   </section>
 
   <section id="experience" class="product-story" aria-labelledby="experience-title">
     <div class="story-stage">
-      <div class="story-top"><h2 id="experience-title">从零散，到有序。</h2><div class="scene-nav" role="group" aria-label="选择产品场景"><button type="button" data-scene="0" aria-pressed="true">记录</button><button type="button" data-scene="1" aria-pressed="false">安排</button><button type="button" data-scene="2" aria-pressed="false">组件</button><button type="button" data-scene="3" aria-pressed="false">助手</button></div></div>
+      <div class="story-top"><h2 id="experience-title" data-i18n="story.title">从零散，到有序。</h2><div class="scene-nav" role="group" aria-label="选择产品场景" data-i18n-attr="aria-label:story.nav"><button type="button" data-scene="0" aria-pressed="true" data-i18n="story.tab0">记录</button><button type="button" data-scene="1" aria-pressed="false" data-i18n="story.tab1">安排</button><button type="button" data-scene="2" aria-pressed="false" data-i18n="story.tab2">组件</button><button type="button" data-scene="3" aria-pressed="false" data-i18n="story.tab3">助手</button></div></div>
       <div class="story-scenes">
-        <article class="story-scene" data-chapter="0"><div class="scene-copy"><h3>先记下来。<br>再慢慢理清。</h3><p>随手记录一条待办，留住一张便签。分类和小步骤，让想法变成可以开始的事。</p></div><figure data-ui><img src="./assets/today.jpg" width="1800" height="1250" alt="今日页面里的快速记录入口、待办和随手记便签" loading="lazy"><figcaption>今日工作台 · 使用示例事项</figcaption></figure></article>
-        <article class="story-scene" data-chapter="1"><div class="scene-copy"><h3>让一天，<br>看得见。</h3><p>在年、月、周、日视图之间切换。计划时间、截止日期、提醒各自独立，安排更清楚。</p></div><figure data-ui><img src="./assets/calendar.jpg" width="1800" height="1250" alt="拾序周日历，产品方案评审安排在下午三点" loading="lazy"><figcaption>周日历 · 计划不替代截止日期</figcaption></figure></article>
-        <article class="story-scene" data-chapter="2"><div class="scene-copy"><h3>下一步，<br>就放在桌面。</h3><p>Windows 端把待办、事件和分类变成独立组件。回到工作时，重要的事仍在眼前。</p></div><figure data-ui><img src="./assets/widgets.jpg" width="1800" height="1250" alt="待办与日程在组件画布中独立展示的排布示例" loading="lazy"><figcaption>组件排布预览 · 原生桌面组件在 Windows 端使用</figcaption></figure></article>
-        <article class="story-scene" data-chapter="3"><div class="scene-copy"><h3>说出问题。<br>决定由你。</h3><p>查询事项、拆解待办、排期和检查冲突。回复链接回到原始记录，更改先预览，再确认。</p></div><figure data-ui><img src="./assets/assistant.jpg" width="1800" height="1250" alt="助手查询本周待办并返回可定位的原始记录链接" loading="lazy"><figcaption>网页本地助手 · 桌面端可配置云模型</figcaption></figure></article>
+        <article class="story-scene" data-chapter="0"><div class="scene-copy"><h3 data-i18n="s0.h">先记下来。<br>再慢慢理清。</h3><p data-i18n="s0.p">随手记录一条待办，留住一张便签。分类和小步骤，让想法变成可以开始的事。</p></div><figure data-ui><img src="./assets/today.jpg" width="1800" height="1250" alt="今日页面里的快速记录入口、待办和随手记便签" data-i18n-attr="alt:s0.alt" loading="lazy"><figcaption data-i18n="s0.cap">今日工作台 · 使用示例事项</figcaption></figure></article>
+        <article class="story-scene" data-chapter="1"><div class="scene-copy"><h3 data-i18n="s1.h">让一天，<br>看得见。</h3><p data-i18n="s1.p">在年、月、周、日视图之间切换。计划时间、截止日期、提醒各自独立，安排更清楚。</p></div><figure data-ui><img src="./assets/calendar.jpg" width="1800" height="1250" alt="拾序周日历，产品方案评审安排在下午三点" data-i18n-attr="alt:s1.alt" loading="lazy"><figcaption data-i18n="s1.cap">周日历 · 计划不替代截止日期</figcaption></figure></article>
+        <article class="story-scene" data-chapter="2"><div class="scene-copy"><h3 data-i18n="s2.h">下一步，<br>就放在桌面。</h3><p data-i18n="s2.p">Windows 端把待办、事件和分类变成独立组件。回到工作时，重要的事仍在眼前。</p></div><figure data-ui><img src="./assets/widgets.jpg" width="1800" height="1250" alt="待办与日程在组件画布中独立展示的排布示例" data-i18n-attr="alt:s2.alt" loading="lazy"><figcaption data-i18n="s2.cap">组件排布预览 · 原生桌面组件在 Windows 端使用</figcaption></figure></article>
+        <article class="story-scene" data-chapter="3"><div class="scene-copy"><h3 data-i18n="s3.h">说出问题。<br>决定由你。</h3><p data-i18n="s3.p">查询事项、拆解待办、排期和检查冲突。回复链接回到原始记录，更改先预览，再确认。</p></div><figure data-ui><img src="./assets/assistant.jpg" width="1800" height="1250" alt="助手查询本周待办并返回可定位的原始记录链接" data-i18n-attr="alt:s3.alt" loading="lazy"><figcaption data-i18n="s3.cap">网页本地助手 · 桌面端可配置云模型</figcaption></figure></article>
       </div>
       <div class="story-progress" aria-hidden="true"><span></span></div>
     </div>
   </section>
 
   <section class="devices section-space" aria-labelledby="devices-title">
-    <div class="devices-heading"><h2 id="devices-title">换个屏幕。<br>接着做。</h2><p>在电脑上专注，在浏览器里继续。登录后，事项与分类在你的设备之间加密同步。</p></div>
-    <div class="device-layout"><figure class="browser-preview" data-ui><img src="./assets/today-light.jpg" width="1800" height="1250" alt="浅色网页工作台，继续查看与编辑个人待办" loading="lazy"><figcaption>网页端 · 无需安装即可记录</figcaption></figure><div class="device-options"><div class="device-option"><h3>Windows 桌面端</h3><p>原生组件、托盘提醒、专注计时与自动更新。你的工作台，也能留在桌面上。</p><a class="inline-link" href="./download.html">选择桌面端 <span aria-hidden="true">↗</span></a></div><div class="device-option"><h3>网页工作台</h3><p>打开浏览器就能开始。已有桌面记录？登录你的 Fairy 账户。</p><a class="inline-link" href="./app/">打开网页端 <span aria-hidden="true">↗</span></a></div><p class="device-note">未登录时保存在当前设备。同步是可选项，数据上传前加密，每人使用自己的账户。</p></div></div>
+    <div class="devices-heading"><h2 id="devices-title" data-i18n="devices.h">换个屏幕。<br>接着做。</h2><p data-i18n="devices.p">在电脑上专注，在浏览器里继续。登录后，事项与分类在你的设备之间加密同步。</p></div>
+    <div class="device-layout"><figure class="browser-preview" data-ui><img src="./assets/today-light.jpg" width="1800" height="1250" alt="浅色网页工作台，继续查看与编辑个人待办" data-i18n-attr="alt:devices.alt" loading="lazy"><figcaption data-i18n="devices.cap">网页端 · 无需安装即可记录</figcaption></figure><div class="device-options"><div class="device-option"><h3 data-i18n="devices.win.h">Windows 桌面端</h3><p data-i18n="devices.win.p">原生组件、托盘提醒、专注计时与自动更新。你的工作台，也能留在桌面上。</p><a class="inline-link" href="./download.html" data-i18n="devices.win.a">选择桌面端 <span aria-hidden="true">↗</span></a></div><div class="device-option"><h3 data-i18n="devices.web.h">网页工作台</h3><p data-i18n="devices.web.p">打开浏览器就能开始。已有桌面记录？登录你的 Fairy 账户。</p><a class="inline-link" href="./app/" data-i18n="cta.openWeb">打开网页端 <span aria-hidden="true">↗</span></a></div><p class="device-note" data-i18n="devices.note">未登录时保存在当前设备。同步是可选项，数据上传前加密，每人使用自己的账户。</p></div></div>
   </section>
 
   <section class="questions section-space" aria-labelledby="questions-title">
-    <h2 id="questions-title">开始前，<br>你可能想知道。</h2>
+    <h2 id="questions-title" data-i18n="faq.h">开始前，<br>你可能想知道。</h2>
     <div class="question-list">
-      <details><summary>从哪里开始最方便？<span aria-hidden="true">+</span></summary><p>想先体验记录和日历，可以直接打开网页端。希望使用原生桌面组件、托盘提醒和自动更新，下载 Windows 版后解压，运行 Shixu.exe。</p></details>
-      <details><summary>网页和桌面会自动看到同一份记录吗？<span aria-hidden="true">+</span></summary><p>需要先配对。在桌面设置中建立私有空间并复制账户，再到网页设置中连接。登录后自动同步事项和分类；账户只保存在自己的设备上。</p></details>
-      <details><summary>助手需要 API 吗？<span aria-hidden="true">+</span></summary><p>基础查询、明确记录和本地规则排期不需要 API。桌面端更复杂的云模型能力需要在设置中配置模型和有效密钥，模型费用由所选服务决定。网页端目前使用本地规则助手。</p></details>
-      <details><summary>关闭网页后，还会提醒我吗？<span aria-hidden="true">+</span></summary><p>网页提醒需要页面保持打开。需要托盘提醒时使用 Windows 版；完全退出应用或设备休眠期间也不保证通知送达。</p></details>
+      <details><summary><span class="question-text" data-i18n="faq.q1">从哪里开始最方便？</span><span aria-hidden="true">+</span></summary><p data-i18n="faq.a1">想先体验记录和日历，可以直接打开网页端。希望使用原生桌面组件、托盘提醒和自动更新，下载 Windows 版后解压，运行 Shixu.exe。</p></details>
+      <details><summary><span class="question-text" data-i18n="faq.q2">网页和桌面会自动看到同一份记录吗？</span><span aria-hidden="true">+</span></summary><p data-i18n="faq.a2">需要登录同一个账户。在网页或桌面工作台左下角点击“登录账户”，注册 Fairy 账户，再在另一端用相同的用户名和密码登录。登录后，事项和分类会在设备上加密后自动同步。</p></details>
+      <details><summary><span class="question-text" data-i18n="faq.q3">助手需要 API 吗？</span><span aria-hidden="true">+</span></summary><p data-i18n="faq.a3">基础查询、明确记录和本地规则排期不需要 API。桌面端更复杂的云模型能力需要在设置中配置模型和有效密钥，模型费用由所选服务决定。网页端目前使用本地规则助手。</p></details>
+      <details><summary><span class="question-text" data-i18n="faq.q4">关闭网页后，还会提醒我吗？</span><span aria-hidden="true">+</span></summary><p data-i18n="faq.a4">网页提醒需要页面保持打开。需要托盘提醒时使用 Windows 版；完全退出应用或设备休眠期间也不保证通知送达。</p></details>
     </div>
   </section>
 
-  <section class="closing section-space"><div><h2>给今天，<br>一个清楚的开始。</h2><p>从记下一件事开始。</p></div><div class="closing-actions"><a class="button large" href="./download.html">下载拾序 <span aria-hidden="true">↓</span></a><a class="inline-link" href="./app/">打开网页端 <span aria-hidden="true">↗</span></a></div></section>
+  <section class="closing section-space"><div><h2 data-i18n="closing.h">给今天，<br>一个清楚的开始。</h2><p data-i18n="closing.p">从记下一件事开始。</p></div><div class="closing-actions"><a class="button large" href="./download.html" data-i18n="cta.getDown">下载拾序 <span aria-hidden="true">↓</span></a><a class="inline-link" href="./app/" data-i18n="cta.openWeb">打开网页端 <span aria-hidden="true">↗</span></a></div></section>
 </main>
-<footer class="site-footer"><div class="footer-meta"><a href="./download.html">桌面端下载</a><a href="./app/">网页工作台</a><span>拾序 · 把事情安放好</span></div><div class="footer-signature" aria-hidden="true"><img src="./assets/icon.svg" width="180" height="180" alt=""><span>拾序</span></div><p>展示画面使用示例事项，不包含用户记录。</p></footer>
+<footer class="site-footer"><div class="footer-meta"><a href="./download.html" data-i18n="footer.download">桌面端下载</a><a href="./app/" data-i18n="footer.web">网页工作台</a><span data-i18n="footer.tagline">拾序 · 把事情安放好</span></div><div class="footer-signature" aria-hidden="true"><img src="./assets/icon.svg" width="180" height="180" alt=""><span data-i18n="brand">拾序</span></div><p data-i18n="footer.sample">展示画面使用示例事项，不包含用户记录。</p></footer>
 </body>
 </html>
