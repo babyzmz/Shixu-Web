@@ -1,6 +1,6 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.14-1';
-import {installAccount} from './account-ui.mjs?v=0.4.14-1';
-import {installMotion} from './motion.mjs?v=0.4.14-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.15-1';
+import {installAccount} from './account-ui.mjs?v=0.4.15-1';
+import {installMotion} from './motion.mjs?v=0.4.15-1';
 installMotion();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
@@ -88,6 +88,9 @@ timeDialog.addEventListener('keydown',e=>e.stopPropagation());
 timeDialog.addEventListener('click',e=>{const action=e.target.dataset.time;if(!action)return;if(action!=='cancel'&&timeTarget){timeTarget.value=action==='clear'?'':timeDialog.querySelector('[aria-label="小时"]').value+':'+timeDialog.querySelector('[aria-label="分钟"]').value;timeTarget.nextElementSibling.querySelector('span').textContent=timeTarget.value||'不设置';timeTarget.dispatchEvent(new Event('input',{bubbles:true}));}timeDialog.close();});
 new MutationObserver(rollingInputs).observe(document.body,{childList:true,subtree:true});
 app.syncNow=sync;
+let changeSyncTimer;
+function queueSync(){clearTimeout(changeSyncTimer);changeSyncTimer=setTimeout(()=>{if(busy||accounts.busy){queueSync();return;}sync();},1000);}
+window.addEventListener('shixu-change',()=>{if(!applying)queueSync();});
 if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js').catch(()=>{});
 setInterval(()=>{if(!document.hidden)sync();},60000);window.addEventListener('online',()=>sync());
 app.render();renderChat();rollingInputs();if(location.hash==='#account')accounts.open();if(pair)sync();
