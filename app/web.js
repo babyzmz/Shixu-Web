@@ -1,6 +1,6 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.13-1';
-import {installAccount} from './account-ui.mjs?v=0.4.13-1';
-import {installMotion} from './motion.mjs?v=0.4.13-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.14-1';
+import {installAccount} from './account-ui.mjs?v=0.4.14-1';
+import {installMotion} from './motion.mjs?v=0.4.14-1';
 installMotion();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
@@ -54,7 +54,7 @@ async function sync(){
  const merged=merge(before,local,remote);if(!cloud.envelope||canonical(merged)!==canonical(remote))cloud=await request('PUT',await encrypt(merged,pair.token),cloud.revision);
  localStorage.setItem('shixu-sync-remote',JSON.stringify(merged));const final=merge(local,app.cloudDoc(),merged);applying=true;try{app.applyDoc(final);}finally{applying=false;}
  localStorage.setItem('shixu-sync-baseline',JSON.stringify(merged));status='已同步 · '+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});lastSync=Date.now();
- }catch(e){if(e.conflict){paused=true;localStorage.setItem('shixu-sync-paused','true');}status='同步未完成：'+e.message;app.toast(status);}finally{busy=false;repaintStatus();}
+ }catch(e){if(e.conflict){paused=true;localStorage.setItem('shixu-sync-paused','true');}status='同步未完成：'+e.message;app.toast(status);}finally{busy=false;repaintStatus();window.dispatchEvent(new Event('shixu-sync-finished'));}
 }
 document.addEventListener('click',async e=>{
  const button=e.target.closest('[data-web-action]');if(!button)return;const action=button.dataset.webAction;e.preventDefault();
@@ -87,6 +87,7 @@ function rollingInputs(){
 timeDialog.addEventListener('keydown',e=>e.stopPropagation());
 timeDialog.addEventListener('click',e=>{const action=e.target.dataset.time;if(!action)return;if(action!=='cancel'&&timeTarget){timeTarget.value=action==='clear'?'':timeDialog.querySelector('[aria-label="小时"]').value+':'+timeDialog.querySelector('[aria-label="分钟"]').value;timeTarget.nextElementSibling.querySelector('span').textContent=timeTarget.value||'不设置';timeTarget.dispatchEvent(new Event('input',{bubbles:true}));}timeDialog.close();});
 new MutationObserver(rollingInputs).observe(document.body,{childList:true,subtree:true});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+app.syncNow=sync;
+if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js').catch(()=>{});
 setInterval(()=>{if(!document.hidden)sync();},60000);window.addEventListener('online',()=>sync());
 app.render();renderChat();rollingInputs();if(location.hash==='#account')accounts.open();if(pair)sync();

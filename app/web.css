@@ -10,6 +10,7 @@
 /* Readable system typography without downloading fonts or scaling the page. */
 :root{--font:"Segoe UI","Microsoft YaHei UI","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
 body{font:14px/1.6 var(--font);letter-spacing:0;text-rendering:optimizeLegibility}
+
 h1,h2,h3,h4,strong,b,.btn{font-weight:600;letter-spacing:0}
 h1{font-size:32px;line-height:1.35}.small,.tiny,.eyebrow,.chip,.badge{font-size:12px;letter-spacing:0}
 .nav-item,.nav-search{font-size:14px}.nav-count{font:12px var(--font)}.nav-label,.profile-name{font-size:13px}
@@ -45,3 +46,29 @@ html[data-input="keyboard"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger
 .task-row,.note-card,.timeline-block{transition:background-color 140ms ease,border-color 140ms ease}
 @media(hover:hover) and (pointer:fine){.icon-btn:hover svg{translate:0 -1px}.icon-btn svg{transition:translate 180ms var(--motion-settle)}.btn.primary:hover{box-shadow:0 3px 12px #7165df1a}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Shared phone layout; native safe areas are applied by the Android window. */
+.native-android body{padding-top:var(--safe-area-inset-top,env(safe-area-inset-top));padding-left:var(--safe-area-inset-left,env(safe-area-inset-left));padding-right:var(--safe-area-inset-right,env(safe-area-inset-right))}
+.native-android #topbar{top:var(--safe-area-inset-top,env(safe-area-inset-top))}
+.native-android .overlay{top:var(--safe-area-inset-top,env(safe-area-inset-top));bottom:var(--safe-area-inset-bottom,env(safe-area-inset-bottom))}
+.native-android .overlay .drawer{height:100%;max-height:100%}
+@media(max-width:760px){
+ body{font-size:15px;-webkit-text-size-adjust:100%}
+ .task-title,.note-content{font-size:15px}.task-meta{font-size:12px}
+ #topbar{min-width:0;padding:0 14px;height:64px;min-height:64px;gap:8px}
+ .topbar>.row{min-width:0}.crumb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+ .header-right{gap:4px;min-width:0}.header-right>.icon-btn[data-action="search"]{display:none}
+ .sync-indicator{max-width:70px;font-size:12px}.web-header-tools{gap:3px}
+ .header-right .btn.primary{min-width:44px;padding:10px}.header-right .new-label{display:none}
+ .icon-btn,.row-actions .icon-btn.small-btn,.rolling-trigger{min-width:44px;min-height:44px}
+ .mobile-nav{height:calc(68px + env(safe-area-inset-bottom));padding-bottom:max(8px,env(safe-area-inset-bottom))}
+ .workspace{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .modal input,.modal textarea,.modal select,.quick-capture input,.chat-input{font-size:16px}
+ .modal-footer{gap:8px;flex-wrap:wrap;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+ .settings-row{flex-wrap:wrap}.settings-row>div{flex:1;min-width:180px}
+ .web-assistant{top:64px;height:calc(100dvh - 140px - env(safe-area-inset-bottom));padding:16px}
+ .web-assistant-main{min-height:0}.web-assistant-main .web-chat{max-height:none}
+ .web-download{display:none}.today-side{display:grid;grid-template-columns:minmax(0,1fr)}.today-category-options{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:3px}.today-category-chip{flex-shrink:0}
+ .native-android .workspace{overflow-x:clip}
+ .native-android .drawer{height:100dvh;max-height:100dvh}
+}
