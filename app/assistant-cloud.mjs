@@ -1,7 +1,7 @@
-import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.4-xiaoshi-cloud';
+import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.5-xiaoshi-cloud';
 export {prepareAction,renderAssistantText,activityForQuestion};
-export function cloudContext(app,question){
- const state=app.getState(),now=new Date(),soon=Date.now()+14*86400000;
+export function cloudContext(app,question,state=app.getState()){
+ const now=new Date(),soon=Date.now()+14*86400000;
  const needsRecords=/待办|任务|日程|事件|便签|笔记|安排|计划|冲突|空闲|完成|记录|专注|提醒|事项|找|修改|删除|改|排|拆|分类|模板|截止|今天|明天|本周|todo/i.test(question);
  const candidates=(needsRecords?[...state.items]:[]).filter(i=>!/待办|任务/.test(question)||/便签|笔记/.test(question)||i.type!=='note').sort((a,b)=>{const score=i=>(question.includes(i.title)&&i.title?100:0)+(i.status!=='done'?10:0)+(Date.parse(i.planDate||i.dueDate||'')<=soon?5:0);return score(b)-score(a)});
  const records=[];for(const i of candidates.slice(0,60)){const record={id:i.id,type:i.type,title:i.title,bodyCharacters:i.body?.length||0,category:i.category,status:i.status,priority:i.priority,planDate:i.planDate,dueDate:i.dueDate,startTime:i.startTime,endDate:i.endDate,endTime:i.endTime,duration:i.duration,pointEvent:i.pointEvent,repeat:i.repeat,dailyTarget:i.dailyTarget,remindAt:i.remindAt,reminders:i.reminders,subtaskCount:i.subtasks?.length||0,totalCompletions:i.completions?.filter(e=>!e.voided).length||0};if(JSON.stringify(records).length+JSON.stringify(record).length>16000)break;records.push(record)}
@@ -22,8 +22,11 @@ export function readRecords(app,args){
 }
 export async function askCloud(question,app,messages,account,signal,onRead){
  const history=messages.filter(m=>m.text&&!m.error).slice(-8).map(m=>({role:m.role,content:(m.text+(m.actions?.length?'\n应用回执：'+m.actions.map(p=>p.status+':'+(p.receipt||p.op.label)).join('；'):'')).slice(0,2000)}));
- const base=cloudContext(app,question);base.pendingActions=messages.flatMap(m=>m.actions||[]).filter(p=>p.status==='pending').slice(-3).map(p=>{const action=JSON.parse(JSON.stringify(p.op));for(const fields of[action.item,action.patch])if(fields){delete fields.body;delete fields.subtasks;}return{proposalId:p.id,action}});
+ const initial=app.getState(),base=cloudContext(app,question,initial);base.pendingActions=messages.flatMap(m=>m.actions||[]).filter(p=>p.status==='pending').slice(-3).map(p=>{const action=JSON.parse(JSON.stringify(p.op));for(const fields of[action.item,action.patch])if(fields){delete fields.body;delete fields.subtasks;}return{proposalId:p.id,action}});
+ for(const p of base.pendingActions){const i=initial.items.find(i=>i.id===p.action.id);if(i&&!base.records.some(r=>r.id===i.id))base.records.unshift({id:i.id,title:i.title,type:i.type,status:i.status,category:i.category,planDate:i.planDate,dueDate:i.dueDate,startTime:i.startTime,endDate:i.endDate,endTime:i.endTime,dailyTarget:i.dailyTarget});}
  while(JSON.stringify(base).length>21000&&base.records.length)base.records.pop();base.includedItems=base.records.length;base.truncated=base.records.length<base.totalItems;
+ const seen=new Map(base.records.map(r=>[r.id,initial.items.find(i=>i.id===r.id)]));
+ const readState=()=>({...initial,items:[...seen.values()].filter(Boolean)});
  let context=base;
  for(let round=0;round<3;round++){
   if(signal.aborted)throw signal.reason;
@@ -31,9 +34,9 @@ export async function askCloud(question,app,messages,account,signal,onRead){
   const reader=response.body.getReader();let length=0;const chunks=[];while(true){const{done,value}=await reader.read();if(done)break;length+=value.length;if(length>90000){await reader.cancel();throw Error('助手响应过大')}chunks.push(value)}const bytes=new Uint8Array(length);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length}let data;try{data=JSON.parse(new TextDecoder().decode(bytes))}catch{throw Error('助手返回格式不正确')}
   if(!response.ok){const error=Error(data.error||'助手服务暂时不可用');error.code=data.code;error.status=response.status;throw error;}
   if(typeof data.text!=='string'||!Array.isArray(data.actions)||data.actions.length>8)throw Error('助手回复不完整');
-  if(!data.reads?.length)return data;
+  if(!data.reads?.length)return {...data,readState:readState()};
   if(round===2)throw Error('本次读取已达上限，请缩小查询范围后再试');
-  onRead?.();const readResults=[];let size=0;for(const args of data.reads.slice(0,3)){const result=readRecords(app,args),length=JSON.stringify(result).length;if(size+length>14000){readResults.push({error:'读取结果较长，请缩小范围或按编号读取'});break;}size+=length;readResults.push({query:args,result});}
+  onRead?.();const readResults=[];let size=0;for(const args of data.reads.slice(0,3)){const snapshot=app.getState(),result=readRecords({getState:()=>snapshot},args);for(const r of result.record?[result.record]:result.records||[]){const current=snapshot.items.find(i=>i.id===r.id);if(current)seen.set(r.id,current);}const length=JSON.stringify(result).length;if(size+length>14000){readResults.push({error:'读取结果较长，请缩小范围或按编号读取'});break;}size+=length;readResults.push({query:args,result});}
   context={now:base.now,timeZone:base.timeZone,app:base.app,categories:base.categories,templates:base.templates,pendingActions:base.pendingActions,totalItems:base.totalItems,readResults};
  }
 }

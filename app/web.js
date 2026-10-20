@@ -1,12 +1,12 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.4-xiaoshi-cloud';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.5-xiaoshi-cloud';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.4-xiaoshi-cloud';
-import {installAccount} from './account-ui.mjs?v=0.5.4-xiaoshi-cloud';
-import {installMotion} from './motion.mjs?v=0.5.4-xiaoshi-cloud';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.4-xiaoshi-cloud';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.4-xiaoshi-cloud';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.4-xiaoshi-cloud';
-import {installControls} from './controls.mjs?v=0.5.4-xiaoshi-cloud';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.5-xiaoshi-cloud';
+import {installAccount} from './account-ui.mjs?v=0.5.5-xiaoshi-cloud';
+import {installMotion} from './motion.mjs?v=0.5.5-xiaoshi-cloud';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.5-xiaoshi-cloud';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.5-xiaoshi-cloud';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.5-xiaoshi-cloud';
+import {installControls} from './controls.mjs?v=0.5.5-xiaoshi-cloud';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -55,9 +55,9 @@ async function send(text,forceLocal=false){
  try{
   if(useCloud){
    const data=await askCloud(question,app,past,account,AbortSignal.any([chatAbort.signal,AbortSignal.timeout(210000)]),()=>{assistantVisuals.setState('searching');renderChat();});if(epoch!==chatEpoch)return;
-   const actions=[];const rejected=[];for(const op of data.actions){try{let original=null,desired=op;if(op.replaces){original=messages.flatMap(m=>m.actions||[]).find(p=>p.id===op.replaces&&p.status==='pending');if(!original||original.op.action!==op.action||original.op.id!==op.id)throw Error('原候选已处理或更改了目标，请重新生成');desired={...original.op,...op,...(op.item?{item:{...original.op.item,...op.item}}:{}),...(op.patch?{patch:{...original.op.patch,...op.patch}}:{})};}const prepared=prepareAction(desired,app.getState());if(original)original.status='superseded';actions.push(prepared)}catch(e){rejected.push(e.message)}}
+   const actions=[];const rejected=[];for(const op of data.actions){try{let original=null,desired=op;const readState=data.readState||app.getState();if(op.replaces){original=messages.flatMap(m=>m.actions||[]).find(p=>p.id===op.replaces&&p.status==='pending');if(!original||original.op.action!==op.action||original.op.id!==op.id)throw Error('原候选已处理或更改了目标，请重新生成');if(original.revision!==actionRevision(original.op,readState))throw Error('原记录已改变，请重新生成候选');desired={...original.op,...op,...(op.item?{item:{...original.op.item,...op.item}}:{}),...(op.patch?{patch:{...original.op.patch,...op.patch}}:{})};}const prepared=prepareAction(desired,readState);if(prepared.revision!==actionRevision(prepared.op,app.getState()))throw Error('生成回复期间原记录已改变，请重新查询');if(original)original.status='superseded';actions.push(prepared)}catch(e){rejected.push(e.message)}}
    const text=data.text+(rejected.length?'\n\n以下候选未生成：'+rejected.join('；'):'');
-   messages.push({role:'assistant',text,html:(actions.length?'<p class="tiny muted">已准备操作，尚未执行。</p>':'')+renderAssistantText(text,app.getState().items),actions});assistantVisuals.setState('replying',actions.length?'confirming':'idle');
+   messages.push({role:'assistant',text,error:rejected.length>0&&!actions.length,retryQuestion:rejected.length&&!actions.length?question:'',html:(actions.length?'<p class="tiny muted">已准备操作，尚未执行。</p>':'')+renderAssistantText(text,app.getState().items),actions});assistantVisuals.setState(rejected.length&&!actions.length?'error':'replying',actions.length?'confirming':'idle');
   }else{
    const record=!/查询|查看|冲突|已完成/.test(question)&&(/记下|记录|添加|新建|创建|拆解/.test(question)||/(今天|明天|后天|周[一二三四五六日天]).*(有|要).*(活动|会议|开会|评审|预约)/.test(question));
    const html=record?'已准备候选，<strong>尚未创建</strong>。请在回复气泡中核对后确认。日程默认估算为 1 小时；缺失日期或开始时间的候选需要补充。':answer(question);
