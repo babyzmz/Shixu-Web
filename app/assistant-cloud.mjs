@@ -1,4 +1,4 @@
-import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.9-my-page';
+import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.10-my-search';
 export {prepareAction,renderAssistantText,activityForQuestion};
 export function cloudContext(app,question,state=app.getState()){
  const now=new Date(),soon=Date.now()+14*86400000;
