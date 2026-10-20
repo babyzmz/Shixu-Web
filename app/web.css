@@ -277,3 +277,28 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 .assistant-page .assistant-proposal{width:100%;box-sizing:border-box}
 @media(max-width:899px){#main:has(.assistant-page){height:calc(var(--visual-height,100dvh) - 140px);padding:8px 18px 12px}.assistant-page .orb-stage{height:clamp(150px,27dvh,230px)}.assistant-page .orb-stage .assistant-orb{width:clamp(140px,22dvh,200px);height:clamp(140px,22dvh,200px)}.assistant-page .chat-message{max-width:94%;padding:14px 16px}.assistant-page .composer-hint{display:none}}
 @media(max-height:600px){.assistant-page .orb-stage{height:105px}.assistant-page .orb-stage .assistant-orb{width:76px;height:76px}.assistant-page .orb-stage h1{font-size:14px}.web-assistant-main.assistant-page{gap:6px}.assistant-page .chat-input{min-height:40px;max-height:70px}}
+/* Conversation feedback: small movements, never layout shifts. */
+.assistant-orb[data-chat-state="thinking"]{animation:xiaoshi-think 1600ms ease-in-out infinite}
+.assistant-orb[data-chat-state="replying"]{animation:xiaoshi-reply 560ms cubic-bezier(.2,.8,.2,1) both}
+.assistant-orb[data-chat-state="error"]{transform:rotate(-4deg);animation:xiaoshi-error 420ms ease-out both}
+.assistant-orb[data-chat-state="thinking"] .orb-fallback i{transform:translateY(-16%)}
+.assistant-orb[data-chat-state="error"] .orb-fallback i{transform:translateY(10%) scaleY(.78)}
+@keyframes xiaoshi-think{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.012)}}
+@keyframes xiaoshi-reply{0%{transform:scale(1)}40%{transform:translateY(-3px) scale(1.035)}72%{transform:translateY(0) scale(.995)}100%{transform:none}}
+@keyframes xiaoshi-error{0%{transform:rotate(0)}65%{transform:rotate(-5deg)}100%{transform:rotate(-4deg)}}
+@media(prefers-reduced-motion:reduce){.assistant-orb[data-chat-state]{animation:none!important;transform:none!important}}
+.web-chat-form [data-web-action="stop-chat"]{min-width:64px}
+.assistant-orb[data-chat-state="planning"]{animation:xiaoshi-think 1600ms ease-in-out infinite}
+.assistant-orb[data-chat-state="searching"]{animation:xiaoshi-search 1800ms ease-in-out infinite}
+@keyframes xiaoshi-search{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1deg)}}
+.assistant-action{margin-top:14px;padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--line)}
+.assistant-action>.row{flex-wrap:wrap;margin-top:12px;gap:8px}
+.assistant-action-field{display:grid;grid-template-columns:minmax(70px,auto) 1fr;gap:12px;margin-top:7px;font-size:12px}
+.assistant-action-field span{color:var(--muted)}
+.assistant-action-field strong{font-weight:500;white-space:pre-wrap;overflow-wrap:anywhere}
+.composer-mode{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:599px){.composer-mode{max-width:120px;font-size:10px}.composer-tools .row{gap:6px}}
+@media(prefers-reduced-motion:reduce){.assistant-orb[data-chat-state]{animation:none!important;transform:none!important}}
+/* Retain input space when the visual viewport shrinks under the phone keyboard. */
+@media(max-width:899px){.assistant-page .orb-stage{height:clamp(86px,calc(var(--visual-height,100dvh) * .32 - 40px),230px)}.assistant-page .orb-stage .assistant-orb{width:clamp(70px,calc(var(--visual-height,100dvh) * .26 - 40px),200px);height:clamp(70px,calc(var(--visual-height,100dvh) * .26 - 40px),200px)}}
+@media(max-height:600px){.assistant-page .orb-stage{height:90px}.assistant-page .orb-stage .assistant-orb{width:64px;height:64px}}

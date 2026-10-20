@@ -377,7 +377,9 @@ function createLiveOrb(canvas, initial = {}) {
       glance.y = back ? 0.08 : (Math.random() * 2 - 1) * 0.5;
       nextGlance = clock + 900 + Math.random() * 2100;
     }
-    const goal = steering ? targetLook : reduce ? REST_LOOK : glance;
+    const mood = options.conversationState ?? "idle";
+    const moodLook = mood === "thinking" || mood === "planning" ? { x: 0.18, y: 0.32 } : mood === "searching" ? { x: reduce ? 0.15 : Math.sin(clock / 700) * 0.24, y: 0.05 } : mood === "error" ? { x: -0.16, y: -0.18 } : REST_LOOK;
+    const goal = mood !== "idle" ? moodLook : steering ? targetLook : reduce ? REST_LOOK : glance;
     const ease = live ? steering ? 0.16 : 0.1 : 1;
     look.x += (goal.x - look.x) * ease;
     look.y += (goal.y - look.y) * ease;
@@ -405,7 +407,7 @@ function createLiveOrb(canvas, initial = {}) {
     gl.uniform1f(uTime, reduce ? 0 : time);
     gl.uniform1f(uSpeed, reduce ? 0 : 0.55);
     gl.uniform2f(uLook, look.x, look.y);
-    gl.uniform1f(uBlink, b);
+    gl.uniform1f(uBlink, Math.max(b, mood === "error" ? 0.22 : 0));
     gl.uniform1f(uMode, resolved.mode);
     gl.uniform3f(uBody, body[0], body[1], body[2]);
     gl.uniform3f(uEye, eye[0], eye[1], eye[2]);

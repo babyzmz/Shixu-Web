@@ -54,7 +54,7 @@
 @media(max-width:1200px){.today-categories{gap:10px;flex-wrap:wrap}.today-category-chip{padding:7px 9px}}
 @media(max-width:640px){.today-categories{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px;margin:0 0 18px}.today-category-options{grid-column:1/-1;grid-row:2;gap:5px}.today-category-add{grid-column:2;grid-row:1;min-height:28px!important}.today-category-chip{min-height:38px;padding:7px 10px}.today-category-name{max-width:145px}.today-list-tools{width:100%;justify-content:space-between}.today-section-toolbar{gap:10px}.today-group-switch button{min-height:32px}.today-category-heading .group-add{min-height:32px}}
 </style>
-<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./controls.css?v=0.5.3-xiaoshi"><link rel="stylesheet" href="./web.css?v=0.5.3-xiaoshi"><meta name="robots" content="noindex,nofollow"></head>
+<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./controls.css?v=0.5.4-xiaoshi-cloud"><link rel="stylesheet" href="./web.css?v=0.5.4-xiaoshi-cloud"><meta name="robots" content="noindex,nofollow"></head>
 <body>
 <div id="app"><aside class="sidebar" id="sidebar"></aside><div class="workspace"><header class="topbar" id="topbar"></header><main id="main" aria-label="工作区"></main></div></div>
 <div class="nav-scrim" id="nav-scrim"></div><nav class="mobile-nav" id="mobile-nav" aria-label="移动端导航"></nav>
@@ -453,7 +453,8 @@ case 'agenda-date':calendarAnchor=d.date;render();break;
 case 'category-manager':openCategories();break;
 case 'filter-category':openCategoryFilter();break;
 case 'list-category':closeModal(true);navTo(d.id?'category':'all',d.id);break;
-case 'export':exportData();break;
+case 'import':$('#import-file').value='';$('#import-file').click();return '请选择备份文件，导入前仍需在预览中确认';
+ case 'export':exportData();break;
 case 'import':$('#import-file').value='';$('#import-file').click();break;
 case 'confirm-import':if(importPending){history.push(clone(state));state=clone(importPending);importPending=null;persist();closeModal(true);render();toast('已恢复备份','undo','撤销')}break;
 case 'preview-reminder':reminderToast({id:'preview',title:'给下一件事留一点准备时间'},true);break;
@@ -491,7 +492,63 @@ window.LayoutPreviewBridge={
  undo:()=>undo()
 };
 </script><script>
+function assistantPerform(op){
+ if(modalKind==='editor'&&editorDirty)throw Error('请先保存或取消当前未保存内容');
+ const current=item(op.id);
+ if(['create','edit'].includes(op.action)){
+  const fields=op.action==='create'?op.item:op.patch;
+  const next=op.action==='create'?Object.assign(emptyItem(fields.type),fields):Object.assign(clone(current),fields);
+  if(op.action==='create'&&!fields.category)next.category=state.categories[0].id;
+  if(next.type!=='task')next.repeat='none';
+  if(!next.title.trim())next.title=next.body.trim().split('\n')[0].slice(0,80);
+  if(!next.title.trim()&&!next.body.trim())throw Error('标题和备注至少填写一项');
+  if(next.type==='event'){
+   if(!next.planDate||!next.startTime)throw Error('日程需要日期与时刻');
+   if(!next.pointEvent&&!Object.hasOwn(fields,'endDate')&&!Object.hasOwn(fields,'endTime')&&(Object.hasOwn(fields,'duration')||op.action==='edit'&&(Object.hasOwn(fields,'planDate')||Object.hasOwn(fields,'startTime')))){const end=new Date(new Date(next.planDate+'T'+next.startTime).getTime()+next.duration*60000);next.endDate=day(end);next.endTime=pad(end.getHours())+':'+pad(end.getMinutes());}
+   if(next.pointEvent){const end=new Date(new Date(next.planDate+"T"+next.startTime).getTime()+60000);next.endDate=day(end);next.endTime=pad(end.getHours())+":"+pad(end.getMinutes());next.duration=1;}
+   else if(!next.endDate||!next.endTime||new Date(next.endDate+'T'+next.endTime)<=new Date(next.planDate+'T'+next.startTime))throw Error('日程结束必须晚于开始，或选择单个时间点');
+  }
+  if(!Object.keys(REPEAT).includes(next.repeat))throw Error('重复规则不正确');
+  if(!safeBackup({...state,items:[next],templates:[],widgets:[]}))throw Error('候选字段不完整，请编辑后保存');
+  if(next.startTime&&next.planDate){const start=new Date(next.planDate+'T'+next.startTime).getTime(),end=next.type==='event'?new Date(next.endDate+'T'+next.endTime).getTime():start+next.duration*60000;const conflict=state.items.find(i=>i.id!==next.id&&i.status!=='done'&&i.planDate&&i.startTime&&i.type!=='note'&&(()=>{const a=new Date(i.planDate+'T'+i.startTime).getTime(),b=i.type==='event'?new Date(i.endDate+'T'+i.endTime).getTime():a+i.duration*60000;return start<b&&a<end})());if(conflict)throw Error('与“'+conflict.title+'”时间冲突，请先调整');}
+  if(op.action==='create'&&state.items.some(i=>i.type===next.type&&i.title===next.title&&i.planDate===next.planDate&&i.dueDate===next.dueDate&&i.startTime===next.startTime))throw Error('已有相同事项，未重复添加');
+  next.updatedAt=new Date().toISOString();commit(()=>{if(op.action==='create')state.items.push(next);else Object.assign(current,next);},op.action==='create'?'已创建事项':'已更新事项');return '已'+(op.action==='create'?'创建':'更新')+'：'+next.title;
+ }
+ if(['delete','complete','restore','record','history','editor','focus','focus_start','focus_pause','focus_reset','template_create'].includes(op.action)&&!current)throw Error('原事项已不存在');
+ switch(op.action){
+ case 'delete':commit(()=>state.items=state.items.filter(i=>i.id!==op.id),'已删除事项');return '已删除：'+current.title;
+ case 'complete':if(current.status==='done'&&!current.dailyTarget)return '该待办已经完成，未重复记录';completeItem(op.id,'done');return current.dailyTarget?'已记录一次完成：'+current.title:'已完成：'+current.title;
+ case 'restore':completeItem(op.id,'todo');return '已恢复待办：'+current.title;
+ case 'void_record':{const entry=current.completions.find(e=>e.id===op.entryId&&!e.voided);if(!entry)throw Error('完成记录已改变');commit(()=>{entry.voided=true;if(current.type==='task'&&!current.dailyTarget&&current.completedAt===entry.at){current.status='todo';current.completedAt=''}current.updatedAt=new Date().toISOString();},'已撤销一次完成');return '已撤销一次完成：'+current.title;}
+ case 'add_subtasks':commit(()=>{current.subtasks.push(...op.steps.map(text=>({text:text.trim(),done:false})));current.updatedAt=new Date().toISOString();},'已追加小步骤');return '已追加 '+op.steps.length+' 个步骤，原步骤保留';
+ case 'note_to_task':{const next={...emptyItem('task'),title:current.title,body:current.body,category:current.category,sourceId:current.id,sourceText:current.body};if(state.items.some(i=>i.type==='task'&&i.sourceId===current.id))throw Error('这张便签已有转出的待办');commit(()=>state.items.push(next),'已转为待办，原便签保留');return '已创建待办，原便签保留';}
+ case 'template_apply':{const t=state.templates.find(t=>t.id===op.id);if(!t)throw Error('模板不存在');openEditor('',t.item.type,creatorShiftTemplate(t.item));return '已打开模板编辑器，保存后才会创建事项';}
+ case 'set_theme':commit(()=>state.settings.theme=op.theme,'已更新外观');applyTheme();return '已切换外观';
+ case 'record':recordCompletion(op.id,op.at||new Date().toISOString(),op.note||'');return '已记录一次完成：'+current.title;
+ case 'history':openCompletions(op.id);return '已打开完成记录日历';
+ case 'editor':openEditor(op.id);return '已打开编辑器';
+ case 'focus_start':if(focusState.running&&focusState.id!==op.id)throw Error('正在专注另一条待办，请先暂停');if(focusState.id!==op.id){focusState={id:op.id,total:1500,remaining:1500,running:false,endAt:0}}if(!focusState.running){if(!focusState.remaining)focusState.remaining=focusState.total;focusState.endAt=Date.now()+focusState.remaining*1000;focusState.running=true}openFocus(op.id);return '已开始专注：'+current.title;
+ case 'focus_pause':if(focusState.id!==op.id)throw Error('该待办没有正在运行的专注');if(focusState.running){focusState.remaining=Math.max(0,Math.ceil((focusState.endAt-Date.now())/1000));focusState.running=false}openFocus(op.id);return '已暂停专注';
+ case 'focus_reset':if(focusState.id!==op.id)throw Error('该待办没有专注计时');focusState.remaining=focusState.total;focusState.running=false;openFocus(op.id);return '已重置专注';
+ case 'focus':openFocus(op.id);return '已打开专注面板，请选择时长并开始';
+ case 'schedule':openSchedule();return '已打开日程安排面板';
+ case 'navigate':navTo(op.route);return '已打开页面';
+ case 'search':listQuery=String(op.query||'').slice(0,300);navTo('all');return '已搜索：'+listQuery;
+ case 'settings':openSettings();return '已打开设置';
+ case 'import':$('#import-file').value='';$('#import-file').click();return '请选择备份文件，导入前仍需在预览中确认';
+ case 'export':exportData();return '已生成本机备份下载';
+ case 'undo':if(!history.length)throw Error('没有可撤销的操作');undo();return '已撤销上一步操作';
+ case 'category_create':case 'category_edit':{const name=op.name.trim();if(state.categories.some(c=>c.name===name&&c.id!==op.id))throw Error('已有同名分类');commit(()=>{if(op.action==='category_create')state.categories.push({id:uid(),name,color:op.color||'#7972C8'});else{const c=state.categories.find(c=>c.id===op.id);c.name=name;if(op.color)c.color=op.color}},'已保存分类');return '已保存分类：'+name;}
+ case 'category_delete':commit(()=>{state.items.forEach(i=>{if(i.category===op.id){i.category=state.categories[0].id;i.updatedAt=new Date().toISOString()}});(state.templates||[]).forEach(t=>{if(t.item.category===op.id)t.item.category=state.categories[0].id});state.widgets.forEach(w=>{if(w.kind==='category'&&w.target===op.id)w.target=state.categories[0].id});state.categories=state.categories.filter(c=>c.id!==op.id);},'已删除分类，事项保留');return '已删除分类，事项归入未分类';
+ case 'template_create':if((state.templates||[]).length>=100)throw Error('模板已满');commit(()=>{(state.templates||=[]).push({id:uid(),name:op.name,item:freshCopy(current,true)});},'已保存模板');return '已保存模板：'+op.name;
+ case 'template_delete':commit(()=>state.templates=state.templates.filter(t=>t.id!==op.id),'已删除模板');return '已删除模板';
+ default:throw Error('此操作需要在应用中手动完成');
+ }
+}
+
 window.ShixuWeb={
+ assistantPerform,
+ assistantState:()=>({route:view,focus:{id:focusState.id,running:focusState.running,remaining:focusState.remaining},calendarMode}),
  getState:()=>clone(state), paired:()=>!!localStorage.getItem('shixu-account'),
  applyScope:profile=>{const next=profile||seed();if(!safeBackup(next))throw Error('账户本机记录校验失败');localStorage.setItem('shixu-pre-account-backup',JSON.stringify(state));state={...next,settings:state.settings};history=[];focusState={id:'',total:1500,remaining:1500,running:false,endAt:0};persist();render();},
  toDesktop:()=>({schema:3,items:state.items.map(i=>{const {color,kindLabel,...rest}=i;return {...rest,noteColor:color||i.noteColor||'yellow',timeZoneId:i.timeZoneId||Intl.DateTimeFormat().resolvedOptions().timeZone,repeatAnchor:i.repeatAnchor||0,seriesId:i.seriesId||'',nextInstanceId:i.nextInstanceId||'',completedAt:i.completedAt||''};}),templates:(state.templates||[]).map(t=>{const {color,...i}=t.item;return {...t,item:{...i,noteColor:color||i.noteColor||'yellow',timeZoneId:i.timeZoneId||Intl.DateTimeFormat().resolvedOptions().timeZone}};}),categories:clone(state.categories),widgets:[],browserWidgets:clone(state.widgets),settings:{theme:state.settings.theme},reminderSeen:[],revision:0}),
@@ -515,6 +572,6 @@ const modalViewport=()=>{const v=window.visualViewport;document.documentElement.
 window.visualViewport?.addEventListener('resize',modalViewport);window.visualViewport?.addEventListener('scroll',modalViewport);modalViewport();
 const modalObserver=new MutationObserver(()=>{document.body.classList.toggle('modal-open',!!document.querySelector('#modal-root .overlay'))});modalObserver.observe(document.getElementById('modal-root'),{childList:true});
 window.addEventListener('resize',()=>{const mobile=matchMedia('(max-width:899px)').matches;if(view==='calendar'&&!!document.querySelector('.agenda-selector')!==mobile)render()});
-</script><script type="module" src="./web.js?v=0.5.3-xiaoshi"></script></body></html>
+</script><script type="module" src="./web.js?v=0.5.4-xiaoshi-cloud"></script></body></html>
 
 
