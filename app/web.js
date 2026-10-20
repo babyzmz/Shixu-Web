@@ -1,12 +1,12 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.10-my-search';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.11-orb-idle';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.10-my-search';
-import {installAccount} from './account-ui.mjs?v=0.5.10-my-search';
-import {installMotion} from './motion.mjs?v=0.5.10-my-search';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.10-my-search';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.10-my-search';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.10-my-search';
-import {installControls} from './controls.mjs?v=0.5.10-my-search';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.11-orb-idle';
+import {installAccount} from './account-ui.mjs?v=0.5.11-orb-idle';
+import {installMotion} from './motion.mjs?v=0.5.11-orb-idle';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.11-orb-idle';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.11-orb-idle';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.11-orb-idle';
+import {installControls} from './controls.mjs?v=0.5.11-orb-idle';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -75,7 +75,7 @@ pair=accounts.session;if(pair)status='已登录 · '+pair.username;
 app.myProfile=()=>({username:pair?.username||'',signedIn:!!pair&&!expired,expired:!!pair&&expired,status:expired?'登录已过期，请重新登录':status});
 app.syncSettings=(section)=>section==='account'?`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`:`<div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；改动先确认。可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
-function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state,.my-sync-status').forEach(e=>e.textContent=status);const badge=$('.my-profile-status');if(badge)badge.textContent=expired?'需重新登录':pair?'已登录':'未登录';const control=$('.my-account-action');if(control)control.textContent=expired?'重新登录':pair?'管理账户':'登录 / 注册';}
+function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);document.querySelectorAll('.my-sync-status').forEach(e=>e.textContent=pair?status:'当前数据保存在本机');const badge=$('.my-profile-status');if(badge)badge.textContent=expired?'需重新登录':pair?'已登录':'未登录';const control=$('.my-account-action');if(control)control.textContent=expired?'重新登录':pair?'管理账户':'登录 / 注册';}
 window.addEventListener('shixu-render',()=>{
  const profile=$('.profile-user');if(profile)profile.textContent=pair?.username||'个人信息与设置';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}

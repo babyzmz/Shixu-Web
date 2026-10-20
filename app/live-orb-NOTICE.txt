@@ -3,6 +3,6 @@ Source: https://github.com/radiumcoders/23rd.dev/blob/ef09ec826537c6f4697fdfeda9
 Documentation: https://www.23rd.dev/docs/components/live-orb
 Retrieved 2026-10-20, revision ef09ec826537c6f4697fdfeda9548a8d9ae4c46d.
 The public component registry provides this vanilla engine for copying into applications.
-Local adaptations: low-power WebGL preference , 1.5x raster limit, bounded gaze and stationary reduced-motion behavior, and application conversation-state gaze. No React wrapper or external runtime assets.
+Local adaptations: low-power WebGL preference , 1.5x raster limit, bounded gaze and stationary reduced-motion behavior, application conversation-state gaze, and mouse-only pointer steering (touch keeps autonomous idle gaze). No React wrapper or external runtime assets.
 Native Windows rendering is a separate WinUI adaptation of the sphere and capsule-eye visual, not the WebGL engine.
 No upstream LICENSE file was present at this revision; no additional upstream license is asserted here.

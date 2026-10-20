@@ -341,7 +341,7 @@ function createLiveOrb(canvas, initial = {}) {
     tick(last);
   }
   const onMove = (e) => {
-    if (!options.interactive || mqReduce.matches) return;
+    if (!options.interactive || mqReduce.matches || e.pointerType !== "mouse") return;
     const parent = canvas.parentElement;
     if (!parent) return;
     const rect = parent.getBoundingClientRect();
