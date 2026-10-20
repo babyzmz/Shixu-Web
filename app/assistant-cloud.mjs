@@ -1,4 +1,4 @@
-import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.5-xiaoshi-cloud';
+import {prepareAction,renderAssistantText,activityForQuestion} from './assistant-actions.mjs?v=0.5.6-settings';
 export {prepareAction,renderAssistantText,activityForQuestion};
 export function cloudContext(app,question,state=app.getState()){
  const now=new Date(),soon=Date.now()+14*86400000;
@@ -21,22 +21,37 @@ export function readRecords(app,args){
  const offset=Math.max(0,Math.min(10000,Number(args.offset)||0)),limit=Math.max(1,Math.min(20,Number(args.limit)||20));return {total:values.length,offset,hasMore:offset+limit<values.length,records:values.slice(offset,offset+limit).map(i=>({id:i.id,type:i.type,title:i.title,body:i.body.slice(0,300),category:i.category,status:i.status,planDate:i.planDate,dueDate:i.dueDate,startTime:i.startTime,endDate:i.endDate,endTime:i.endTime,remindAt:i.remindAt,dailyTarget:i.dailyTarget,totalCompletions:i.completions?.filter(e=>!e.voided).length||0}))};
 }
 export async function askCloud(question,app,messages,account,signal,onRead){
- const history=messages.filter(m=>m.text&&!m.error).slice(-8).map(m=>({role:m.role,content:(m.text+(m.actions?.length?'\n应用回执：'+m.actions.map(p=>p.status+':'+(p.receipt||p.op.label)).join('；'):'')).slice(0,2000)}));
- const initial=app.getState(),base=cloudContext(app,question,initial);base.pendingActions=messages.flatMap(m=>m.actions||[]).filter(p=>p.status==='pending').slice(-3).map(p=>{const action=JSON.parse(JSON.stringify(p.op));for(const fields of[action.item,action.patch])if(fields){delete fields.body;delete fields.subtasks;}return{proposalId:p.id,action}});
+ const history=[];let historySize=0;
+ for(const m of messages.filter(m=>m.text&&!m.error).slice(-24).reverse()){
+  const content=(m.text+(m.actions?.length?'\n应用回执：'+m.actions.map(p=>p.status+':'+(p.receipt||p.op.label)).join('；'):'')).slice(0,6500);
+  if(historySize+content.length>48000)break;historySize+=content.length;history.unshift({role:m.role,content});
+ }
+ const initial=app.getState(),base=cloudContext(app,question,initial);base.pendingActions=messages.flatMap(m=>m.actions||[]).filter(p=>p.status==='pending').slice(-12).map(p=>{const action=JSON.parse(JSON.stringify(p.op));for(const fields of[action.item,action.patch])if(fields){delete fields.body;delete fields.subtasks;}return{proposalId:p.id,action}});
  for(const p of base.pendingActions){const i=initial.items.find(i=>i.id===p.action.id);if(i&&!base.records.some(r=>r.id===i.id))base.records.unshift({id:i.id,title:i.title,type:i.type,status:i.status,category:i.category,planDate:i.planDate,dueDate:i.dueDate,startTime:i.startTime,endDate:i.endDate,endTime:i.endTime,dailyTarget:i.dailyTarget});}
- while(JSON.stringify(base).length>21000&&base.records.length)base.records.pop();base.includedItems=base.records.length;base.truncated=base.records.length<base.totalItems;
+ while(JSON.stringify(base).length>32000&&base.records.length)base.records.pop();base.includedItems=base.records.length;base.truncated=base.records.length<base.totalItems;
  const seen=new Map(base.records.map(r=>[r.id,initial.items.find(i=>i.id===r.id)]));
  const readState=()=>({...initial,items:[...seen.values()].filter(Boolean)});
- let context=base;
- for(let round=0;round<3;round++){
+ // Keep every read result across rounds. The former replacement of context
+ // discarded earlier reads, causing models to repeat the same tools forever.
+ const readResults=[],cache=new Map(),actions=new Map();let readSize=0,context=base;
+ for(let round=0;round<6;round++){
   if(signal.aborted)throw signal.reason;
   const response=await fetch(account.endpoint+'/v2/assistant/chat',{method:'POST',headers:{Authorization:'Bearer '+account.session,'Content-Type':'application/json'},body:JSON.stringify({question,context,history,consent:true}),signal,redirect:'error'});
-  const reader=response.body.getReader();let length=0;const chunks=[];while(true){const{done,value}=await reader.read();if(done)break;length+=value.length;if(length>90000){await reader.cancel();throw Error('助手响应过大')}chunks.push(value)}const bytes=new Uint8Array(length);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length}let data;try{data=JSON.parse(new TextDecoder().decode(bytes))}catch{throw Error('助手返回格式不正确')}
-  if(!response.ok){const error=Error(data.error||'助手服务暂时不可用');error.code=data.code;error.status=response.status;throw error;}
-  if(typeof data.text!=='string'||!Array.isArray(data.actions)||data.actions.length>8)throw Error('助手回复不完整');
-  if(!data.reads?.length)return {...data,readState:readState()};
-  if(round===2)throw Error('本次读取已达上限，请缩小查询范围后再试');
-  onRead?.();const readResults=[];let size=0;for(const args of data.reads.slice(0,3)){const snapshot=app.getState(),result=readRecords({getState:()=>snapshot},args);for(const r of result.record?[result.record]:result.records||[]){const current=snapshot.items.find(i=>i.id===r.id);if(current)seen.set(r.id,current);}const length=JSON.stringify(result).length;if(size+length>14000){readResults.push({error:'读取结果较长，请缩小范围或按编号读取'});break;}size+=length;readResults.push({query:args,result});}
-  context={now:base.now,timeZone:base.timeZone,app:base.app,categories:base.categories,templates:base.templates,pendingActions:base.pendingActions,totalItems:base.totalItems,readResults};
+  const reader=response.body.getReader();let length=0;const chunks=[];while(true){const{done,value}=await reader.read();if(done)break;length+=value.length;if(length>180000){await reader.cancel();throw Error('助手响应过大')}chunks.push(value)}const bytes=new Uint8Array(length);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length}let data;try{data=JSON.parse(new TextDecoder().decode(bytes))}catch{throw Error('助手返回格式不正确')}
+  if(!response.ok){const error=Error(data.error||'助手服务暂时不可用');error.code=data.code;error.status=response.status;if(actions.size)return{text:'已准备以下部分候选，尚未执行。其余处理未完成：'+error.message,actions:[...actions.values()],reads:[],readState:readState()};throw error;}
+  if(typeof data.text!=='string'||!Array.isArray(data.actions)||data.actions.length>16||data.reads&&(!Array.isArray(data.reads)||data.reads.length>8))throw Error('助手回复不完整');
+  for(const action of data.actions){const{label,...identity}=action,key=JSON.stringify(identity);if(!actions.has(key)&&actions.size<16)actions.set(key,action);}
+  if(!data.reads?.length||round===5)return {...data,actions:[...actions.values()],reads:[],readState:readState()};
+  onRead?.();let fresh=0;
+  for(const args of data.reads){
+   const key=JSON.stringify(Object.fromEntries(Object.entries(args).sort(([a],[b])=>a.localeCompare(b))));if(cache.has(key))continue;
+   const snapshot=app.getState(),result=readRecords({getState:()=>snapshot},args),size=JSON.stringify(result).length;
+   if(readSize+size>56000){base.readBudgetNotice='读取内容已接近本次预算，请使用已有结果回答并准备全部明确的操作；未覆盖内容要说明，不要继续重复读取。';break;}
+   cache.set(key,result);readSize+=size;fresh++;readResults.push({query:args,result});
+   for(const r of result.record?[result.record]:result.records||[]){const current=snapshot.items.find(i=>i.id===r.id);if(current&&!seen.has(r.id))seen.set(r.id,current);}
+  }
+  context={...base,readResults,generatedActions:[...actions.values()].map(a=>({action:a.action,id:a.id,label:a.label,title:a.item?.title,planDate:a.item?.planDate,startTime:a.item?.startTime})),allowReads:round<4&&fresh>0&&!base.readBudgetNotice,readRoundsRemaining:Math.max(0,4-round)};
+  while(JSON.stringify(context).length>94000&&context.records.length)context.records.pop();
+  // Preserve the first-read snapshot, so an edit during generation is refused.
  }
 }

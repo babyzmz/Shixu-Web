@@ -20,6 +20,12 @@ export function prepareAction(raw,state){
  if(op.action==='navigate'&&!ROUTES.has(op.route))throw Error('未知页面');
  if(op.action==='create'||op.action==='edit'){
   const fields=op.action==='create'?op.item:op.patch;if(!fields||typeof fields!=='object'||Array.isArray(fields))throw Error('缺少事项字段');
+  // Accept only unambiguous provider spellings. Conflicting aliases are never
+  // silently preferred, and every mapped value still passes normal validation.
+  for(const[alias,key]of Object.entries({date:'planDate',time:'startTime',notes:'body',categoryId:'category'}))if(Object.hasOwn(fields,alias)){
+   if(Object.hasOwn(fields,key)&&fields[key]!==fields[alias])throw Error('模型返回了相互冲突的字段：'+key);
+   fields[key]=fields[alias];delete fields[alias];
+  }
   for(const key of Object.keys(fields))if(!ITEM_FIELDS.has(key)&&!(op.action==='create'&&key==='type'))throw Error('不支持直接修改字段：'+key);
   if(op.action==='create'&&!['task','event','note'].includes(fields.type))throw Error('事项类型无效');
   if(fields.title!==undefined&&typeof fields.title!=='string'||fields.body!==undefined&&typeof fields.body!=='string')throw Error('标题和备注必须是文字');

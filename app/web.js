@@ -1,12 +1,12 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.5-xiaoshi-cloud';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.6-settings';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.5-xiaoshi-cloud';
-import {installAccount} from './account-ui.mjs?v=0.5.5-xiaoshi-cloud';
-import {installMotion} from './motion.mjs?v=0.5.5-xiaoshi-cloud';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.5-xiaoshi-cloud';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.5-xiaoshi-cloud';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.5-xiaoshi-cloud';
-import {installControls} from './controls.mjs?v=0.5.5-xiaoshi-cloud';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.6-settings';
+import {installAccount} from './account-ui.mjs?v=0.5.6-settings';
+import {installMotion} from './motion.mjs?v=0.5.6-settings';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.6-settings';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.6-settings';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.6-settings';
+import {installControls} from './controls.mjs?v=0.5.6-settings';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -34,7 +34,7 @@ function answer(text){
  if(/待办|事项|本周|今天|日程|事件|便签|已完成/.test(text))return `<strong>找到 ${values.length} 条${from?'（'+from+' 至 '+to+'）':''}</strong>`+(values.length?'<table><thead><tr><th>原始记录</th><th>日期 / 时间</th><th>分类</th></tr></thead><tbody>'+values.slice(0,100).map(i=>`<tr><td>${source(i)}</td><td>${escape((i.planDate||i.dueDate||'待安排')+' '+(i.startTime||''))}</td><td>${escape(state.categories.find(c=>c.id===i.category)?.name||'未分类')}</td></tr>`).join('')+'</tbody></table>':'<p>可新建事项，或切换查询时间范围。</p>')+(values.length>100?'<p>仅显示前100条，请缩小范围。</p>':'');
  return '我可以查询今天、本周、已完成事项，检查时间冲突，或帮你拆解待办和安排日程。直接描述需求即可生成候选，更改由你确认。当前使用本地规则，没有调用云模型。';
 }
-function actionHTML(m){return (m.error&&m.retryQuestion&&!chatPending?`<div class="row"><button class="btn sm" data-web-action="retry-chat" data-message="${chatKey(m)}">重试</button><button class="btn ghost sm" data-web-action="local-chat" data-message="${chatKey(m)}">本次用本机查询</button></div>`:'')+(m.actions||[]).map((p,n)=>`<section class="assistant-action"><strong>${escape(p.op.label)}</strong>${actionDetails(p.op,app.getState())}<div class="row"><span class="tiny">${escape(p.receipt||({pending:'尚未执行',applying:'正在执行',applied:'已执行',rejected:'已放弃',error:'未执行',superseded:'已被新候选替换'}[p.status]||'已过期'))}</span>${p.status==='pending'?`<button class="btn primary sm" data-web-action="apply-assistant-action" data-message="${chatKey(m)}" data-index="${n}">确认执行</button><button class="btn ghost sm" data-web-action="reject-assistant-action" data-message="${chatKey(m)}" data-index="${n}">放弃</button>`:''}</div></section>`).join('');}
+function actionHTML(m){const pending=(m.actions||[]).filter(p=>p.status==='pending');return (m.error&&m.retryQuestion&&!chatPending?`<div class="row"><button class="btn sm" data-web-action="retry-chat" data-message="${chatKey(m)}">重试</button><button class="btn ghost sm" data-web-action="local-chat" data-message="${chatKey(m)}">本次用本机查询</button></div>`:'')+(m.actions||[]).map((p,n)=>`<section class="assistant-action"><strong>${escape(p.op.label)}</strong>${actionDetails(p.op,app.getState())}<div class="row"><span class="tiny">${escape(p.receipt||({pending:'尚未执行',applying:'正在执行',applied:'已执行',rejected:'已放弃',error:'未执行',superseded:'已被新候选替换'}[p.status]||'已过期'))}</span>${p.status==='pending'?`<button class="btn primary sm" data-web-action="apply-assistant-action" data-message="${chatKey(m)}" data-index="${n}">确认执行</button><button class="btn ghost sm" data-web-action="reject-assistant-action" data-message="${chatKey(m)}" data-index="${n}">放弃</button>`:''}</div></section>`).join('')+(pending.length>1?`<div class="assistant-batch"><span class="tiny muted">逐项核对后，可确认本组；每项单独显示执行结果。</span><button class="btn primary sm" data-web-action="apply-assistant-batch" data-message="${chatKey(m)}">确认本组（${pending.length}项）</button></div>`:'');}
 function chatHTML(full=false){
  const proposal=full?app.assistantProposal?.():'';
  const header=full?`<div class="orb-stage">${orbMarkup()}<h1 data-assistant-name>小拾</h1></div>`:`<div class="spread assistant-brand"><div class="assistant-identity">${orbMarkup()}<h3>小拾</h3></div><button class="icon-btn" aria-label="关闭助手" data-web-action="close-assistant">×</button></div>`;
@@ -72,7 +72,7 @@ window.renderAI=function(){app.hideAssistant();return `<section class="web-assis
 app.editAssistantDraft=text=>{chatDraft=text;renderChat();const input=$('.web-assistant-main textarea');if(input){input.value=text;input.focus();}};
 const accounts=installAccount(app,{chat(value){if(value!==undefined){chatEpoch++;chatAbort?.abort();chatPending=false;chatAbort=null;assistantVisuals.setState('idle');messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
 pair=accounts.session;if(pair)status='已登录 · '+pair.username;
-app.syncSettings=()=>`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div><div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
+app.syncSettings=(section)=>section==='account'?`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`:`<div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；改动先确认。可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
 function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);}
 window.addEventListener('shixu-render',()=>{
@@ -101,6 +101,16 @@ document.addEventListener('click',async e=>{
  case'assistant-revoke':if(pair)localStorage.removeItem('shixu-ai-consent:'+pair.id);chatAbort?.abort();cloudMode=false;localStorage.setItem('shixu-ai-mode','local');renderChat();app.settings();break;
  case'retry-chat':case'local-chat':{const m=messages.find(m=>String(chatKey(m))===button.dataset.message);if(m?.retryQuestion)send(m.retryQuestion,action==='local-chat');break;}
  case'stop-chat':chatAbort?.abort();break;
+ case'apply-assistant-batch':{
+  const m=messages.find(m=>String(chatKey(m))===button.dataset.message),pending=m?.actions?.filter(p=>p.status==='pending')||[];
+  if(!pending.length)break;button.disabled=true;
+  // Preflight every candidate before the first write; recheck each again when
+  // applying. A failure is reported per operation, never as blanket success.
+  try{for(const p of pending){if(p.revision!==actionRevision(p.op,app.getState()))throw Error('本组有记录已改变，请重新生成操作');prepareAction(p.op,app.getState());}}
+  catch(e){button.disabled=false;app.toast(e.message);assistantVisuals.setState('error');break;}
+  for(const p of pending){p.status='applying';try{if(p.revision!==actionRevision(p.op,app.getState()))throw Error('原记录已改变，此项未执行，请重新生成');p.receipt=app.assistantPerform(prepareAction(p.op,app.getState()).op);p.status='applied';}catch(e){p.status='error';p.receipt=e.message;}}
+  assistantVisuals.setState(pending.some(p=>p.status==='error')?'error':'replying');saveMessages();renderChat(true);break;
+ }
  case'apply-assistant-action':case'reject-assistant-action':{
   const m=messages.find(m=>String(chatKey(m))===button.dataset.message),p=m?.actions?.[Number(button.dataset.index)];if(!p||p.status!=='pending')break;
   if(action==='reject-assistant-action'){p.status='rejected';assistantVisuals.setState('idle');}

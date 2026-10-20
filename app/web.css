@@ -300,5 +300,20 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 @media(max-width:599px){.composer-mode{max-width:120px;font-size:10px}.composer-tools .row{gap:6px}}
 @media(prefers-reduced-motion:reduce){.assistant-orb[data-chat-state]{animation:none!important;transform:none!important}}
 /* Retain input space when the visual viewport shrinks under the phone keyboard. */
+.settings-modal .modal-content{padding:0;min-height:min(440px,55dvh)}
+.assistant-batch{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px 0 0}.assistant-action .row{flex-wrap:wrap}
+.settings-layout{display:grid;grid-template-columns:160px minmax(0,1fr);min-height:inherit}
+.settings-nav{padding:16px 10px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:5px;background:var(--bg)}
+.settings-tab{display:flex;align-items:center;gap:9px;text-align:left;padding:12px;border-radius:10px;font-size:13px;min-height:44px;color:var(--muted);white-space:nowrap}
+.settings-tab svg{width:17px;height:17px;flex-shrink:0}.settings-tab.active{background:var(--accent2);color:var(--accent)}
+.settings-panel{min-width:0;padding:24px}.settings-heading{font-size:16px;margin:0 0 12px}.settings-copy{min-width:0;flex:1}
+.settings-panel .settings-row{align-items:flex-start;flex-wrap:wrap;gap:14px}.settings-panel .settings-row h3{font-size:14px}.settings-panel .settings-row p{max-width:42em}
+.settings-control{max-width:100%;display:flex;align-items:center}.settings-control .segment{flex-wrap:wrap}.settings-control .btn,.settings-panel .sync-actions .btn{min-height:40px;white-space:nowrap}
+.settings-note{font-size:12px;color:var(--muted);line-height:1.8;margin-top:18px}.settings-about{text-align:center;padding:22px 0}.settings-about img{margin-bottom:12px}.settings-about p{font-size:12px;color:var(--muted);margin-top:8px}
+.settings-links{display:flex;gap:20px;flex-wrap:wrap;padding:20px 0;color:var(--accent);font-size:13px}
+.settings-switch{width:44px;height:26px;background:var(--line);border-radius:20px;padding:3px;flex-shrink:0}.settings-switch span{display:block;width:20px;height:20px;border-radius:50%;background:var(--surface);transition:transform 160ms ease-out}.settings-switch[aria-checked=true]{background:var(--accent)}.settings-switch[aria-checked=true] span{transform:translateX(18px)}
+.privacy-mode :is(#main,.assistant-column,.web-chat) :is(.task-title,.task-meta,.task-time,.note-content,.note-card h3,.cal-chip,.week-event,.focus-title,.focus-banner h2,.focus-banner p,.timeline-event,.reminder-summary,.daily-card h3,.daily-card .small,.upcoming-list,.web-chat .chat-message,.search-result strong,.search-result small){color:transparent!important;text-shadow:none!important;user-select:none;pointer-events:none;background-image:repeating-linear-gradient(90deg,var(--line) 0 5px,transparent 5px 9px);background-size:auto 45%;background-position:center;background-repeat:repeat-x}
+.privacy-mode .web-chat .chat-message *{visibility:hidden}.privacy-mode .web-chat .chat-message{min-height:44px}
+@media(max-width:599px){.settings-layout{display:flex;flex-direction:column}.settings-nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px;flex-shrink:0;scrollbar-width:none}.settings-nav::-webkit-scrollbar{display:none}.settings-tab{padding:10px;gap:6px;font-size:12px}.settings-tab svg{display:none}.settings-panel{padding:20px;min-height:340px}.settings-panel .settings-row{flex-direction:column;align-items:stretch}.settings-control{justify-content:flex-start}.settings-switch{align-self:flex-start}}
 @media(max-width:899px){.assistant-page .orb-stage{height:clamp(86px,calc(var(--visual-height,100dvh) * .32 - 40px),230px)}.assistant-page .orb-stage .assistant-orb{width:clamp(70px,calc(var(--visual-height,100dvh) * .26 - 40px),200px);height:clamp(70px,calc(var(--visual-height,100dvh) * .26 - 40px),200px)}}
 @media(max-height:600px){.assistant-page .orb-stage{height:90px}.assistant-page .orb-stage .assistant-orb{width:64px;height:64px}}
