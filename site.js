@@ -6,15 +6,19 @@
   // Chinese lives in the HTML; English replaces tagged content so static pages stay readable without JS.
   const go=text=>text+' <span aria-hidden="true">↗</span>',down=text=>text+' <span aria-hidden="true">↓</span>';
   const en={
+    'release.android13.kicker':'Android 0.2.13 · October 21, 2026','release.android13.title':'A fuller calendar. Quicker swipe actions.',
+    'release.android13.gestures':'Year, month, week and day views on phones and tablets, with overdue tasks, past plans and ended events. Swipe left to edit or delete; continue and release to delete with Undo. Swipe right to complete or restore tasks; daily targets and events only record one completion.',
+    'release.android13.calendar':'System calendar settings now offer syncing current events, target counts and retry feedback. Only valid events are mirrored, not tasks or notes. The cloud assistant still proposes changes for confirmation before saving; an app save receipt does not confirm a system calendar write.',
+    'release.android13.limits':'Improved narrow-screen filters, gestures starting on row buttons, editor input and reduced motion. Permissions, network access and battery policies still affect reminders and background sync; continuous lock-screen updates are not guaranteed. The Windows download stays at 0.4.26; iOS and macOS downloads remain unavailable.',
     'platform.choose':'Choose a platform','platform.downloads':'Platform downloads','platform.windows':'Windows','platform.android':'Android','platform.soon':'Coming soon','platform.available':'Available now','platform.download':'Download','platform.testDownload':'Download beta',
     'platform.windows.version':'0.4.26 · x64 · 84.7 MiB','platform.windows.description':'Native desktop widgets, tray reminders and a global assistant.','platform.windows.requirements':'Windows 10 2004+ / Windows 11<br>ZIP archive. Extract, then run.','platform.windows.downloadLabel':'Download for Windows',
-    'platform.android.version':'0.2.12 · Limited testing · 3.7 MiB','platform.android.description':'Your workbench on phones and tablets. Capture a thought and keep going.','platform.android.requirements':'Android 7+ · Recent System WebView<br>APK package. Allow installation from this source.','platform.android.downloadLabel':'Download Android beta',
+    'platform.android.version':'0.2.13 · Limited testing · 3.7 MiB','platform.android.description':'Your workbench on phones and tablets. Capture a thought and keep going.','platform.android.requirements':'Android 7+ · Recent System WebView<br>APK package. Allow installation from this source.','platform.android.downloadLabel':'Download Android beta',
     'platform.ios.version':'Future platform','platform.ios.description':'Planned for iPhone and iPad. Not available to download yet.','platform.ios.requirements':'No app package released yet.<br>Use the web workbench for now.',
     'platform.macos.version':'Future platform','platform.macos.description':'Planned for Mac. Not available to download yet.','platform.macos.requirements':'No app package released yet.<br>Use the web workbench for now.',
     'devices.android.h':'Android phones and tablets','devices.android.p':'Capture a task, check your calendar and continue with the same account. Optional local reminders and system calendar connection.','devices.android.a':go('Choose Android'),
     'android.install.h':'Android.<br>Install and start capturing.','android.install.p':'Open the downloaded APK and allow installation from this source when prompted. Sign in to the same Fairy account to sync items and categories.',
     'android.h':'Shixu,<br>on your phone.',
-    'android.p':'Android 0.2.12 small-group test build · about 4 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
+    'android.p':'Android 0.2.13 small-group test build · about 4 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
     'android.download':down('Download Android test build'),
     'android.note':'A recent System WebView is required. Enable reminders and lock-screen sync in settings, and allow notifications and background activity. Network loss or force-stop interrupts sync.',
     'home.title':'Shixu — Pick up the pieces. Shape your day.',
@@ -104,7 +108,7 @@
     if(window.ScrollTrigger)window.ScrollTrigger.refresh();
   });
   applyLanguage();
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});
+  if(!document.currentScript?.hasAttribute('data-release-notes')&&'serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{});
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)'),story=document.querySelector('.product-story'),buttons=[...document.querySelectorAll('[data-scene]')];
   let storyTrigger=null,active=-1;
   const scenes=[...document.querySelectorAll('.story-scene')];
