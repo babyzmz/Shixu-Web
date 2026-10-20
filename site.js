@@ -7,7 +7,7 @@
   const go=text=>text+' <span aria-hidden="true">↗</span>',down=text=>text+' <span aria-hidden="true">↓</span>';
   const en={
     'android.h':'Shixu,<br>on your phone.',
-    'android.p':'Android 0.1.4 small-group test build · about 4 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
+    'android.p':'Android 0.1.5 small-group test build · about 4 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
     'android.download':down('Download Android test build'),
     'android.note':'Android 7+ with a recent System WebView. Enable background calendar sync, notifications and unrestricted battery access in settings. Verified with Android 16 emulator lock-screen Doze; vendor phones still need testing. Force-stop and network loss interrupt the connection.',
     'home.title':'Shixu — Pick up the pieces. Shape your day.',

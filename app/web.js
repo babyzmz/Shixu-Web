@@ -1,7 +1,9 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.17-1';
-import {installAccount} from './account-ui.mjs?v=0.4.17-1';
-import {installMotion} from './motion.mjs?v=0.4.17-1';
-installMotion();
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.19-1';
+import {installAccount} from './account-ui.mjs?v=0.4.19-1';
+import {installMotion} from './motion.mjs?v=0.4.19-1';
+import {installControls} from './controls.mjs?v=0.4.19-1';
+window.ShixuMotion=installMotion();
+installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -65,32 +67,15 @@ document.addEventListener('click',async e=>{
  case'plan':app.plan();$('#planning-details').open=true;$('#ai-input')?.focus();break;
  case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;case'widgets':app.nav('widgets');break;
  case'sync':if(paused)accounts.open();else await sync();break;
- case'keep-local':case'keep-cloud':if(!confirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();accounts.open();break;
+ case'keep-local':case'keep-cloud':if(!await window.ShixuConfirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();accounts.open();break;
  }}catch(error){app.toast(error.message);}
 });
 document.addEventListener('submit',e=>{if(e.target.matches('.web-chat-form')){e.preventDefault();send(e.target.querySelector('textarea').value);}});
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'&&e.target.closest('.web-chat-form')){e.preventDefault();send(e.target.value);}});
-// Replace narrow native browser time inputs with a keyboard/touch accessible rolling selector.
-const timeDialog=document.createElement('dialog');timeDialog.className='time-dialog';timeDialog.innerHTML='<h3>选择时间</h3><div class="rollers"><select size="5" aria-label="小时">'+Array.from({length:24},(_,i)=>`<option value="${String(i).padStart(2,'0')}">${String(i).padStart(2,'0')}</option>`).join('')+'</select><select size="5" aria-label="分钟">'+Array.from({length:60},(_,i)=>`<option value="${String(i).padStart(2,'0')}">${String(i).padStart(2,'0')}</option>`).join('')+'</select></div><div class="row"><button class="btn ghost" data-time="clear">清除</button><button class="btn" data-time="cancel">取消</button><button class="btn primary" data-time="save">确认</button></div>';document.body.append(timeDialog);let timeTarget=null;
-function rollingInputs(){
- const repeat=$('#edit-repeat');if(repeat)repeat.closest('.form-field').hidden=!/待办/.test($('#dialog-title')?.textContent||'');
- const reminder=$('#edit-reminder');if(reminder&&reminder.type==='datetime-local'){
-  reminder.type='hidden';const wrap=document.createElement('div');wrap.className='reminder-fields';
-  const date=document.createElement('input');date.type='date';date.setAttribute('aria-label','提醒日期');date.value=reminder.value.slice(0,10);
-  const time=document.createElement('input');time.type='time';time.setAttribute('aria-label','提醒时间');time.value=reminder.value.slice(11,16);
-  const update=()=>{reminder.value=date.value&&time.value?date.value+'T'+time.value:'';reminder.dispatchEvent(new Event('input',{bubbles:true}));};date.addEventListener('input',update);time.addEventListener('input',update);
-  const clear=document.createElement('button');clear.type='button';clear.className='text-btn';clear.textContent='清除提醒';clear.addEventListener('click',()=>{date.value='';time.value='';time.nextElementSibling.querySelector('span').textContent='不设置';update();});
-  wrap.append(date,time);reminder.after(wrap,clear);
- }
- document.querySelectorAll('#editor-form input[type="time"],#ai-results input[type="time"]').forEach(input=>{input.type='hidden';const button=document.createElement('button');button.type='button';button.className='rolling-trigger';button.innerHTML='<span>'+escape(input.value||'不设置')+'</span><span>◷</span>';button.setAttribute('aria-label',input.getAttribute('aria-label')||(input.id==='event-end'?'结束时间':input.id==='event-start'?'开始时间':'计划开始时间'));button.addEventListener('click',()=>{timeTarget=input;const [hour,minute]=(input.value||'09:00').split(':');timeDialog.querySelector('[aria-label="小时"]').value=hour;timeDialog.querySelector('[aria-label="分钟"]').value=minute;timeDialog.showModal();});input.after(button);});
-}
-timeDialog.addEventListener('keydown',e=>e.stopPropagation());
-timeDialog.addEventListener('click',e=>{const action=e.target.dataset.time;if(!action)return;if(action!=='cancel'&&timeTarget){timeTarget.value=action==='clear'?'':timeDialog.querySelector('[aria-label="小时"]').value+':'+timeDialog.querySelector('[aria-label="分钟"]').value;timeTarget.nextElementSibling.querySelector('span').textContent=timeTarget.value||'不设置';timeTarget.dispatchEvent(new Event('input',{bubbles:true}));}timeDialog.close();});
-new MutationObserver(rollingInputs).observe(document.body,{childList:true,subtree:true});
 app.syncNow=sync;
 let changeSyncTimer;
 function queueSync(){clearTimeout(changeSyncTimer);changeSyncTimer=setTimeout(()=>{if(busy||accounts.busy){queueSync();return;}sync();},1000);}
 window.addEventListener('shixu-change',()=>{if(!applying)queueSync();});
 if('serviceWorker'in navigator&&!window.Capacitor?.isNativePlatform?.())navigator.serviceWorker.register('./sw.js').catch(()=>{});
 setInterval(()=>{if(!document.hidden)sync();},60000);window.addEventListener('online',()=>sync());
-app.render();renderChat();rollingInputs();if(location.hash==='#account')accounts.open();if(pair)sync();
+app.render();renderChat();if(location.hash==='#account')accounts.open();if(pair)sync();
