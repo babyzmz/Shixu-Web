@@ -36,11 +36,11 @@ h1{font-size:32px;line-height:1.35}.small,.tiny,.eyebrow,.chip,.badge{font-size:
 .account-panel .form-field{display:grid;gap:8px;margin:16px 0}.account-panel input{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--text);font:inherit}.account-panel details{margin:20px 0}.account-recovery{padding:18px;border:1px solid var(--line);border-radius:14px;margin:20px 0}.account-recovery p{font-size:14px;line-height:1.7}
 .account-dialog{max-width:460px}.account-dialog .modal-content{padding:28px}.account-dialog .account-panel h3{font-size:20px}.account-dialog .account-panel input{min-height:48px}.account-dialog .sync-actions{margin-top:22px}.account-dialog .sync-detail{font-size:14px;line-height:1.8}.account-entry{font-size:14px;font-weight:600;text-align:left}
 
-/* Small, interruptible feedback. Individual scale leaves widget drag transforms intact. */
+/* Legacy color feedback; Motion V1 owns transforms and interaction lifetimes. */
 :root{--motion-settle:cubic-bezier(.2,.8,.25,1.2);--motion-out:cubic-bezier(.2,.8,.2,1)}
 .overlay,.modal,.toast{animation:none}
-button,.btn,.nav-item,.icon-btn,.rolling-trigger{transition:scale 220ms var(--motion-settle),background-color 140ms ease,border-color 140ms ease,color 140ms ease;transform-origin:center}
-html[data-input="pointer"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger):active:not(:disabled){scale:.975;transition-duration:80ms}
+button,.btn,.nav-item,.icon-btn,.rolling-trigger{transition:background-color 140ms ease,border-color 140ms ease,color 140ms ease;transform-origin:center}
+html[data-input="pointer"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger):active:not(:disabled){background-color:var(--surface-hover);transition-duration:80ms}
 html[data-input="keyboard"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger){transition:none}
 .form-field :is(input,textarea,select),.chat-input{transition:border-color 140ms ease,box-shadow 140ms ease}
 .task-row,.note-card,.timeline-block{transition:background-color 140ms ease,border-color 140ms ease}
@@ -87,7 +87,7 @@ html[data-input="keyboard"] :is(button,.btn,.nav-item,.icon-btn,.rolling-trigger
 @media(max-width:600px){.daily-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.daily-card{padding:15px;border-radius:17px}.daily-card .task-title{font-size:15px}.compact-today-head{gap:10px}.compact-today-head .btn{font-size:11px;padding:8px 10px}.task-row .row-actions{gap:1px}.daily-add{width:38px;height:38px;min-width:38px;min-height:38px}}
 .upcoming-panel{margin-top:26px;padding:22px}.upcoming-panel h2{font-size:17px;display:flex;align-items:center;gap:8px}.upcoming-panel header p{margin-top:5px}.upcoming-list{margin-top:15px;display:grid;gap:4px}.upcoming-row{display:flex;align-items:center;width:100%;gap:16px;text-align:left;padding:14px 10px;border-radius:13px;min-width:0}.upcoming-row:hover{background:var(--bg)}.upcoming-row>.grow{display:flex;flex-direction:column;gap:5px;overflow-wrap:anywhere}.upcoming-row>.grow>strong{font-size:14px;font-weight:550}.upcoming-row>svg{color:var(--muted);width:16px}.upcoming-date{display:flex;flex-direction:column;gap:5px;min-width:80px;color:var(--accent);font-size:12px}.upcoming-date strong{font-size:13px;font-weight:600}.upcoming-date>span{color:var(--muted);font-size:11px}.upcoming-empty{padding:12px 0;font-size:13px}.upcoming-later{display:flex;align-items:center;gap:8px;width:100%;margin-top:12px;border-top:1px solid var(--line);padding:16px 0 0;text-align:left;font-size:12px;color:var(--muted);overflow-wrap:anywhere}.upcoming-later svg{flex-shrink:0;width:15px}@media(max-width:600px){.upcoming-panel{padding:17px;margin-top:22px}.upcoming-panel h2{font-size:16px}.upcoming-panel header{gap:6px}.upcoming-panel header .btn{font-size:11px;padding:6px}.upcoming-row{gap:10px;padding-inline:0}.upcoming-date{min-width:65px}.upcoming-row>.grow>strong{font-size:14px}}
 
-#editor-form.compact-creator .title-input{min-height:52px;line-height:1.5;padding:2px 0 8px} .creator-text-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--soft,var(--surface));color:var(--accent);font-size:12px}.creator-text-hint .btn{flex-shrink:0}.creator-text-hint span{overflow-wrap:anywhere}html[data-input=pointer] .creator-section[open]>.creator-section-body{animation:creator-open 170ms cubic-bezier(.23,1,.32,1) both}@keyframes creator-open{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){html[data-input=pointer] .creator-section[open]>.creator-section-body{animation:none}}
+#editor-form.compact-creator .title-input{min-height:52px;line-height:1.5;padding:2px 0 8px} .creator-text-hint{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--soft,var(--surface));color:var(--accent);font-size:12px}.creator-text-hint .btn{flex-shrink:0}.creator-text-hint span{overflow-wrap:anywhere}@keyframes creator-open{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}@media(prefers-reduced-motion:reduce){html[data-input=pointer] .creator-section[open]>.creator-section-body{animation:none}}
 /* Workbench V2. Semantic palette shared by Web and packaged Android. */
 :root,[data-theme=light]{
  --app-bg:#F6F7FB;--sidebar-bg:#EDF0F6;--header-bg:#FFFFFF;--surface:#FFFFFF;
@@ -233,3 +233,27 @@ input[type=checkbox]{min-height:0;accent-color:var(--accent)}
 .color-option{background:var(--note-marker,var(--surface-inset))}.note-card:not(.add-note){border-inline-start:3px solid var(--note-marker,var(--border))}
 
 
+
+/* Motion V1: geometry stays at the real target; only decoration compresses. */
+:root{--motion-feedback:80ms;--motion-micro:150ms;--motion-content:180ms;--motion-layout:240ms;--motion-panel:340ms;--motion-ease:cubic-bezier(.2,.8,.2,1);--motion-distance:6px;--motion-press:.985}
+.motion-ready [data-motion-group]{position:relative;isolation:isolate}
+.motion-ready #mobile-nav[data-motion-group]{position:fixed}
+.selection-indicator{position:absolute;pointer-events:none;left:0;top:0;z-index:-1;border-radius:9px;background:var(--selected-bg);contain:layout style}
+.motion-ready [data-motion-group]>:is(button,.nav-item).active{background:transparent;box-shadow:none}
+.motion-ready .type-selector>.selection-indicator{border:1px solid var(--accent)}
+.motion-ready .creator-modes>.selection-indicator,.motion-ready .segment>.selection-indicator{background:var(--surface)}
+.motion-ready :is(.btn.primary,.daily-add){position:relative;isolation:isolate;background:transparent!important;scale:1!important}
+.motion-ready :is(.btn.primary,.daily-add)::before{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--accent);z-index:-1;pointer-events:none;transition:transform var(--motion-micro) var(--motion-ease)}
+.motion-ready[data-input=pointer] :is(.btn.primary,.daily-add):active:not(:disabled)::before{transform:scale(var(--motion-press));transition-duration:var(--motion-feedback)}
+.motion-ready[data-input=keyboard] :is(.btn.primary,.daily-add)::before{transition:none}
+.completion-feedback,.completion-hit-guard{position:fixed;z-index:10;overflow:hidden;border-radius:var(--radius-card)}
+.completion-feedback{pointer-events:none;background:var(--surface)}
+.completion-feedback>.task-row{height:100%;margin:0}
+.completion-hit-guard{background:transparent;touch-action:none}
+.note-motion-anchor{position:fixed;left:0;top:0;z-index:75;pointer-events:none;overflow:hidden;border-radius:var(--radius-card);padding:16px;font-size:18px;font-weight:600;white-space:nowrap}
+.motion-closing{cursor:default}.motion-closing>.modal{pointer-events:none}
+.modal-header>.sheet-grip{display:none}
+.motion-theme :is(body,#sidebar,#topbar,.card,.modal,.nav-item,.task-row,.note-card,.control-sheet,.field-trigger,.btn){transition:background-color var(--motion-micro) linear,border-color var(--motion-micro) linear,color var(--motion-micro) linear}
+.creator-section{overflow-anchor:none}.modal-content{overscroll-behavior:contain}
+@media(max-width:899px){.drawer .modal-header{touch-action:none;user-select:none;padding-top:26px}.drawer .modal-header>.sheet-grip{display:block;position:absolute;top:9px;left:calc(50% - 18px);height:4px;width:36px;border-radius:4px;background:var(--control-border);pointer-events:none}}
+@media(prefers-reduced-motion:reduce){.motion-ready :is(.btn.primary,.daily-add)::before{transition:none!important;transform:none!important}}

@@ -4,13 +4,13 @@ const pad=n=>String(n).padStart(2,'0');
 const localDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 export function installControls(){
  const dialog=document.createElement('dialog');dialog.className='control-sheet';document.body.append(dialog);
- let cancel=()=>{},origin=null;
+ let cancel=()=>{},origin=null,nextOrigin=null;
  const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
- function close(){dialog.close();dialog.replaceChildren();origin?.isConnected&&origin.focus({preventScroll:true});cancel();cancel=()=>{};}
+ function close(){for(const a of dialog.getAnimations())a.cancel();dialog.close();dialog.replaceChildren();origin?.isConnected&&origin.focus({preventScroll:true});cancel();cancel=()=>{};}
  function show(title,body,footer,setup=()=>{}){
-  if(dialog.open)close();origin=document.activeElement;
+  if(dialog.open)close();origin=nextOrigin||document.activeElement;nextOrigin=null;
   dialog.innerHTML=`<div class="sheet-grip" aria-hidden="true"></div><header class="control-head"><h3 id="control-title">${esc(title)}</h3><button type="button" class="icon-btn" data-control="cancel" aria-label="关闭选择器">×</button></header><div class="control-body">${body}</div><footer class="control-foot">${footer}</footer>`;
-  dialog.setAttribute('aria-labelledby','control-title');dialog.showModal();setup();
+  dialog.setAttribute('aria-labelledby','control-title');dialog.showModal();setup();window.ShixuMotion?.control(dialog,origin);
   dialog.querySelector('[data-control="cancel"]')?.focus({preventScroll:true});
  }
  dialog.addEventListener('cancel',e=>{e.preventDefault();close();});
@@ -69,10 +69,10 @@ export function installControls(){
    if(kind==='select'){input.hidden=true;}else input.type='hidden';
    const button=document.createElement('button');button.type='button';button.className='field-trigger';button.setAttribute('aria-label',label(input));button.setAttribute('aria-haspopup','dialog');
    const refresh=()=>{const text=kind==='select'?input.selectedOptions[0]?.textContent:input.value.replace('T','  ');button.innerHTML=`<span class="${text?'':'muted'}">${esc(text||'不设置')}</span><span class="field-icon" aria-hidden="true">${window.ic?.(kind==='select'?'down':kind==='time'?'clock':'calendar')||'⌄'}</span>`;button.disabled=input.disabled;};
-   refresh();input.after(button);input.addEventListener('input',refresh);input.addEventListener('change',refresh);
-   button.onclick=()=>{document.activeElement?.blur();kind==='select'?selection(input):kind==='color'?color(input):temporal(input,kind);};
+   refresh();input.after(button);input.addEventListener('input',refresh);input.addEventListener('change',refresh);input.addEventListener('shixu-control-refresh',refresh);
+   button.onclick=()=>{nextOrigin=button;kind==='select'?selection(input):kind==='color'?color(input):temporal(input,kind);};
   });
  }
- new MutationObserver(enhance).observe(document.body,{childList:true,subtree:true});enhance();
+ let queued=false;const observe=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;enhance();});});observe.observe(document.getElementById('modal-root'),{childList:true,subtree:true});window.addEventListener('shixu-render',enhance);enhance();
  return {confirm,enhance};
 }
