@@ -1,9 +1,9 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.4.22-1';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.0-v2';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.22-1';
-import {installAccount} from './account-ui.mjs?v=0.4.22-1';
-import {installMotion} from './motion.mjs?v=0.4.22-1';
-import {installControls} from './controls.mjs?v=0.4.22-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.0-v2';
+import {installAccount} from './account-ui.mjs?v=0.5.0-v2';
+import {installMotion} from './motion.mjs?v=0.5.0-v2';
+import {installControls} from './controls.mjs?v=0.5.0-v2';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -29,12 +29,12 @@ function answer(text){
  if(/待办|事项|本周|今天|日程|事件|便签|已完成/.test(text))return `<strong>找到 ${values.length} 条${from?'（'+from+' 至 '+to+'）':''}</strong>`+(values.length?'<table><thead><tr><th>原始记录</th><th>日期 / 时间</th><th>分类</th></tr></thead><tbody>'+values.slice(0,100).map(i=>`<tr><td>${source(i)}</td><td>${escape((i.planDate||i.dueDate||'待安排')+' '+(i.startTime||''))}</td><td>${escape(state.categories.find(c=>c.id===i.category)?.name||'未分类')}</td></tr>`).join('')+'</tbody></table>':'<p>可新建事项，或切换查询时间范围。</p>')+(values.length>100?'<p>仅显示前100条，请缩小范围。</p>':'');
  return '我可以查询今天、本周、已完成事项，检查时间冲突，或帮你拆解待办和安排日程。点击下方快捷操作生成候选，更改由你确认。当前使用本地规则，没有调用云模型。';
 }
-const actions=()=>`<div class="sync-actions"><button class="btn sm" data-web-action="plan">拆待办</button><button class="btn sm" data-web-action="schedule">排日程</button><button class="btn sm" data-web-action="conflicts">查冲突</button><button class="btn sm" data-web-action="widgets">网页组件</button></div>`;
+const actions=()=>`<div class="sync-actions"><button class="btn sm" data-web-action="plan">拆待办</button><button class="btn sm" data-web-action="schedule">排日程</button><button class="btn sm" data-web-action="conflicts">查冲突</button></div>`;
 function chatHTML(full=false){return `<div class="spread"><h3>拾序助手</h3><div class="row"><button class="icon-btn" aria-label="清空聊天" data-web-action="clear-chat">↺</button>${full?'':'<button class="icon-btn" aria-label="关闭助手" data-web-action="close-assistant">×</button>'}</div></div><p class="tiny muted">跨页面查询 · 本地规则 · 修改先确认</p><div class="web-chat" aria-live="polite">${messages.map(m=>`<div class="chat-message ${m.role==='user'?'user':''}">${m.role==='user'?escape(m.text):m.html}</div>`).join('')||'<div class="chat-message">试着问“本周待办”或“检查日程冲突”。回复里的事项可以直接定位到日历。</div>'}</div>${actions()}<form class="web-chat-form"><textarea class="chat-input" aria-label="助手提问" placeholder="查询事项，或者检查时间冲突…" rows="3" required></textarea><div class="spread" style="margin-top:10px"><span class="tiny muted">Ctrl+Enter 发送</span><button class="btn primary" type="submit">发送 ↑</button></div></form>`;}
 function renderChat(){column.innerHTML=chatHTML();const main=$('.web-assistant-main');if(main)main.innerHTML=chatHTML(true);requestAnimationFrame(()=>document.querySelectorAll('.web-chat').forEach(e=>e.scrollTop=e.scrollHeight));}
 function send(text){if(!text.trim())return;const record=!/查询|查看|冲突|已完成/.test(text)&&(/记下|记录|添加|新建|创建|拆解/.test(text)||/(今天|明天|后天|周[一二三四五六日天]).*(有|要).*(活动|会议|开会|评审|预约)/.test(text));messages.push({role:'user',text:text.trim()},{role:'assistant',html:record?'已准备候选，<strong>尚未创建</strong>。请在下方提案工作台核对后确认。日程默认估算为 1 小时；缺失日期或开始时间的候选需要补充。':answer(text.trim())});messages=messages.slice(-50);saveMessages();if(record)app.prepare(text.trim());renderChat();}
 app.hideAssistant=()=>{assistantOpen=false;$('.workspace').classList.remove('assistant-open');};
-function showAssistant(){if($('#main .web-assistant-main')){app.hideAssistant();renderChat();return;}assistantOpen=!assistantOpen;$('.workspace').classList.toggle('assistant-open',assistantOpen);renderChat();}
+function showAssistant(){if(matchMedia('(max-width:899px)').matches){app.nav('ai');return;}if($('#main .web-assistant-main')){app.hideAssistant();renderChat();return;}assistantOpen=!assistantOpen;$('.workspace').classList.toggle('assistant-open',assistantOpen);renderChat();}
 const renderAI=window.renderAI;
 window.renderAI=function(){app.hideAssistant();return `<div class="page-head"><h1>全局助手</h1></div><section class="card card-pad web-assistant-main">${chatHTML(true)}</section><details style="margin-top:24px" id="planning-details"><summary class="text-btn">待办拆解与提案</summary>${renderAI()}</details>`;};
 const accounts=installAccount(app,{chat(value){if(value!==undefined){messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
@@ -45,9 +45,9 @@ function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state'
 window.addEventListener('shixu-render',()=>{
  const profile=$('.profile-name');if(profile)profile.textContent=pair?.username||'我的空间';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
- const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a><button class="icon-btn" aria-label="打开侧边助手" data-web-action="assistant">${window.ic('sparkles')}</button>`;header.prepend(links);}
+ const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a>`;header.prepend(links);}
  const profileButton=$('.profile-name');if(profileButton){const entry=document.createElement('button');entry.className='text-btn account-entry';entry.dataset.webAction='account-open';entry.textContent=pair?.username||'登录账户';profileButton.replaceWith(entry);}
- if(assistantOpen&&$('#main .web-assistant-main'))app.hideAssistant();renderChat();
+ if(assistantOpen&&($('#main .web-assistant-main')||matchMedia('(max-width:899px)').matches))app.hideAssistant();renderChat();
 });
 async function responseJSON(response){const reader=response.body.getReader();let length=0;const chunks=[];while(true){const {value,done}=await reader.read();if(done)break;length+=value.length;if(length>1_600_000){reader.cancel();throw Error('同步响应过大');}chunks.push(value);}const bytes=new Uint8Array(length);let p=0;for(const c of chunks){bytes.set(c,p);p+=c.length;}return JSON.parse(new TextDecoder().decode(bytes));}
 async function request(method,body,revision){const response=await fetch(pair.endpoint+'/v2/account/data',{method,headers:{Authorization:'Bearer '+pair.session,...(body?{'Content-Type':'application/json','If-Match':String(revision)}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:'error'});const data=await responseJSON(response);if(!response.ok&&!(method==='GET'&&response.status===404)){if(response.status===401)expired=true;throw Error(data.error||'HTTP '+response.status);};return data;}
@@ -67,7 +67,7 @@ document.addEventListener('click',async e=>{
  case'clear-chat':messages=[];saveMessages();renderChat();break;
  case'source':app.hideAssistant();app.locate(button.dataset.id);break;
  case'plan':app.plan();$('#planning-details').open=true;$('#ai-input')?.focus();break;
- case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;case'widgets':app.nav('widgets');break;
+ case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;
  case'sync':if(paused)accounts.open();else await sync();break;
  case'keep-local':case'keep-cloud':if(!await window.ShixuConfirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();accounts.open();break;
  }}catch(error){app.toast(error.message);}

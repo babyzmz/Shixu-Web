@@ -10,7 +10,7 @@ export function installMotion(){
  function enter(el,kind='page',delay=0){
   if(!el||reduced.matches||!pointer||!el.animate)return;
   for(const old of el.getAnimations())if(running.has(old)){old.cancel();running.delete(old);}
-  const sheet=kind==='sheet',small=kind==='small',phone=globalThis.innerWidth<=760;
+  const sheet=kind==='sheet',small=kind==='small',phone=globalThis.innerWidth<=899;
   const a=el.animate([
    {opacity:small ? .8 : .65,translate:sheet?(phone?'0 24px':'16px 0'):small?'0 8px':'0 8px',scale:small?'.98':'1'},
    {opacity:1,translate:'0 0',scale:'1'}
@@ -41,7 +41,7 @@ export function installMotion(){
   if(!root||reduced.matches||!pointer||!root.animate)return;
   const copy=root.cloneNode(true);copy.inert=true;copy.setAttribute('aria-hidden','true');copy.classList.add('motion-exit');
   for(const el of copy.querySelectorAll('[id]'))el.removeAttribute('id');document.body.append(copy);
-  const panel=copy.querySelector('.modal');const a=panel?.animate([{opacity:1,translate:'0 0'},{opacity:0,translate:globalThis.innerWidth<=760?'0 20px':'12px 0'}],{duration:150,easing:'cubic-bezier(.4,0,1,1)'});
+  const panel=copy.querySelector('.modal');const a=panel?.animate([{opacity:1,translate:'0 0'},{opacity:0,translate:globalThis.innerWidth<=899?'0 20px':'12px 0'}],{duration:150,easing:'cubic-bezier(.4,0,1,1)'});
   if(a){a.finished.catch(()=>{}).finally(()=>copy.remove());}else copy.remove();
  }
  return {stop,exit};
