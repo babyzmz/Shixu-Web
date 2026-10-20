@@ -23,7 +23,7 @@
     'download.description':'Get Shixu for Windows and Android, see iOS and macOS availability, or open the web workbench.',
     skip:'Skip to main content',brand:'Shixu','brand.home':'Shixu home','nav.label':'Site navigation',
     'nav.tour':'Tour','nav.web':go('Web app'),'nav.desktop':'Downloads',
-    'cta.get':go('Get Shixu'),'cta.getDown':down('Get Shixu'),'cta.windows':down('Download for Windows'),'cta.tryWeb':go('Try the web app first'),'cta.openWeb':go('Open the web app'),
+    'cta.get':go('Download Shixu'),'cta.getDown':down('Download Shixu'),'cta.windows':down('Download for Windows'),'cta.tryWeb':go('Try the web app first'),'cta.openWeb':go('Open the web app'),
     'hero.l1':'Pick up the pieces.','hero.l2':'Shape your day.',
     'hero.intro':'To-dos, events and notes, all in one place.<br>Keep the next step in sight, and your time for yourself.',
     'hero.alt':'Shixu Today workbench showing priority to-dos, a schedule timeline and notes together',

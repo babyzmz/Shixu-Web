@@ -1,9 +1,9 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.1-motion1';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.2-download';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.1-motion1';
-import {installAccount} from './account-ui.mjs?v=0.5.1-motion1';
-import {installMotion} from './motion.mjs?v=0.5.1-motion1';
-import {installControls} from './controls.mjs?v=0.5.1-motion1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.2-download';
+import {installAccount} from './account-ui.mjs?v=0.5.2-download';
+import {installMotion} from './motion.mjs?v=0.5.2-download';
+import {installControls} from './controls.mjs?v=0.5.2-download';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -45,7 +45,7 @@ function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state'
 window.addEventListener('shixu-render',()=>{
  const profile=$('.profile-name');if(profile)profile.textContent=pair?.username||'我的空间';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
- const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载 Windows 桌面端" rel="noopener noreferrer">${window.ic('download')}<span>桌面端</span></a>`;header.prepend(links);}
+ const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载拾序" rel="noopener noreferrer">${window.ic('download')}<span>下载</span></a>`;header.prepend(links);}
  const profileButton=$('.profile-name');if(profileButton){const entry=document.createElement('button');entry.className='text-btn account-entry';entry.dataset.webAction='account-open';entry.textContent=pair?.username||'登录账户';profileButton.replaceWith(entry);}
  if(assistantOpen&&($('#main .web-assistant-main')||matchMedia('(max-width:899px)').matches))app.hideAssistant();renderChat();
 });
