@@ -6,15 +6,15 @@ const key = async token => {if(decode(token).length!==32)throw Error('配对码�
 export async function encrypt(document, token) {
  const plain=enc.encode(JSON.stringify(document));if(plain.length>1_000_000)throw Error('同步空间超过1MB，请先导出备份并清理过长正文');
  const iv=crypto.getRandomValues(new Uint8Array(12));const data=await crypto.subtle.encrypt({name:'AES-GCM',iv},await key(token),plain);
- return {version:1,iv:encode(iv),ciphertext:encode(new Uint8Array(data))};
+ return {version:document.schema>=3?2:1,iv:encode(iv),ciphertext:encode(new Uint8Array(data))};
 }
 export async function decrypt(envelope, token) {
- if(envelope.version!==1||envelope.ciphertext.length>1_400_000||decode(envelope.iv).length!==12)throw Error('同步格式不正确');
+ if(![1,2].includes(envelope.version)||envelope.ciphertext.length>1_400_000||decode(envelope.iv).length!==12)throw Error('同步格式不正确，请更新应用');
  return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(envelope.iv)},await key(token),decode(envelope.ciphertext))));
 }
 export const canonical = value => JSON.stringify(value, (k,v)=>k==='kindLabel'?undefined:v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.localeCompare(b))):v);
 export function merge(before, ours, theirs) {
- const rows=kind=>{const b=new Map(before[kind].map(x=>[x.id,x])),l=new Map(ours[kind].map(x=>[x.id,x])),r=new Map(theirs[kind].map(x=>[x.id,x]));const values=[];
+ const rows=kind=>{const b=new Map((before[kind]||[]).map(x=>[x.id,x])),l=new Map((ours[kind]||[]).map(x=>[x.id,x])),r=new Map((theirs[kind]||[]).map(x=>[x.id,x]));const values=[];
  for(const id of new Set([...b.keys(),...l.keys(),...r.keys()])){const bv=canonical(b.get(id)),lv=canonical(l.get(id)),rv=canonical(r.get(id));if(lv!==bv&&rv!==bv&&lv!==rv){
   const old=b.get(id),left=l.get(id),right=r.get(id);
   const content=v=>canonical({...v,dailyTarget:v.dailyTarget||0,pointEvent:!!v.pointEvent,completions:[],updatedAt:''});
@@ -24,10 +24,11 @@ export function merge(before, ours, theirs) {
    values.push({...left,completions:completionRows,updatedAt:[left.updatedAt,right.updatedAt].sort().at(-1)});continue;
   }
   const e=Error('同一记录被两端修改或一端删除。原记录保留，请处理同步冲突');e.conflict=true;throw e;}const value=lv!==bv?l.get(id):r.get(id);if(value)values.push(value);}return values;};
- const result={schema:Math.max(before.schema||1,ours.schema||1,theirs.schema||1),items:rows('items'),categories:rows('categories')};
+ const result={schema:Math.max(before.schema||1,ours.schema||1,theirs.schema||1),items:rows('items'),categories:rows('categories'),templates:rows('templates')};
+ if(result.templates?.some(t=>!result.categories.some(c=>c.id===t.item.category))){const e=Error('模板分类有并发冲突，请保留两端备份');e.conflict=true;throw e;}
  if(result.items.some(x=>!result.categories.some(c=>c.id===x.category))) {const e=Error('分类与事项有并发冲突，请保留两端备份后处理');e.conflict=true;throw e;}return result;
 }
-export const empty = () => ({schema:1,items:[],categories:[]});
+export const empty = () => ({schema:1,items:[],categories:[],templates:[]});
 export function parsePair(code) {
  if(!code.startsWith('shixu1.'))throw Error('请粘贴完整配对码');
  const pair=JSON.parse(dec.decode(decode(code.slice(7))));const url=new URL(pair.endpoint);

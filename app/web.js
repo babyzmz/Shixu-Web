@@ -1,7 +1,9 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.21-1';
-import {installAccount} from './account-ui.mjs?v=0.4.21-1';
-import {installMotion} from './motion.mjs?v=0.4.21-1';
-import {installControls} from './controls.mjs?v=0.4.21-1';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.4.22-1';
+window.ShixuCreation={reminderOccurrences,reminderLocal};
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.22-1';
+import {installAccount} from './account-ui.mjs?v=0.4.22-1';
+import {installMotion} from './motion.mjs?v=0.4.22-1';
+import {installControls} from './controls.mjs?v=0.4.22-1';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
