@@ -1,12 +1,12 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.6-settings';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.8-settings-pages';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.6-settings';
-import {installAccount} from './account-ui.mjs?v=0.5.6-settings';
-import {installMotion} from './motion.mjs?v=0.5.6-settings';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.6-settings';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.6-settings';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.6-settings';
-import {installControls} from './controls.mjs?v=0.5.6-settings';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.8-settings-pages';
+import {installAccount} from './account-ui.mjs?v=0.5.8-settings-pages';
+import {installMotion} from './motion.mjs?v=0.5.8-settings-pages';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.8-settings-pages';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.8-settings-pages';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.8-settings-pages';
+import {installControls} from './controls.mjs?v=0.5.8-settings-pages';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -97,7 +97,7 @@ document.addEventListener('click',async e=>{
  const button=e.target.closest('[data-web-action]');if(!button)return;const action=button.dataset.webAction;e.preventDefault();
  try{if(await accounts.handle(action))return;switch(action){
  case'assistant':app.nav('ai');break;case'assistant-panel':showAssistant();break;case'close-assistant':app.hideAssistant();break;
- case'assistant-mode':if(chatPending)break;cloudMode=pair?!cloudMode:true;localStorage.setItem('shixu-ai-mode',cloudMode?'cloud':'local');if(cloudMode&&!pair)accounts.open();else if(document.querySelector('#modal-root .settings-row'))app.settings();renderChat();break;
+ case'assistant-mode':if(chatPending)break;cloudMode=pair?!cloudMode:true;localStorage.setItem('shixu-ai-mode',cloudMode?'cloud':'local');if(cloudMode&&!pair)accounts.open();else if(document.querySelector('.settings-page'))app.settings();renderChat();break;
  case'assistant-revoke':if(pair)localStorage.removeItem('shixu-ai-consent:'+pair.id);chatAbort?.abort();cloudMode=false;localStorage.setItem('shixu-ai-mode','local');renderChat();app.settings();break;
  case'retry-chat':case'local-chat':{const m=messages.find(m=>String(chatKey(m))===button.dataset.message);if(m?.retryQuestion)send(m.retryQuestion,action==='local-chat');break;}
  case'stop-chat':chatAbort?.abort();break;
