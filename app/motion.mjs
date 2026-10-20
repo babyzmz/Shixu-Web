@@ -32,7 +32,7 @@ export function installMotion(){
  listen(document,'keydown',()=>{for(const s of [...springs])if(!s.el.matches('.modal'))cancelSpring(s.el,true);keyboard=true;root.dataset.input='keyboard';for(const a of animations)a.cancel();flush()},{capture:true});
  listen(document,'scroll',()=>{lastScroll=performance.now()},{capture:true,passive:true});
  function deferRender(fn){if(held){pendingRender=fn;return true;}return false;}
- function key(n){if(n.nodeType!==1)return '';if(n.id)return '#'+n.id;if(n.dataset.item)return 'item:'+n.dataset.item;if(n.dataset.noteId)return 'note:'+n.dataset.noteId;if(n.dataset.chatKey)return 'chat:'+n.dataset.chatKey;if(n.dataset.section)return 'section:'+n.dataset.section;
+ function key(n){if(n.nodeType!==1)return '';if(n.id)return '#'+n.id;if(n.dataset.preserveVisual)return 'visual:'+n.dataset.preserveVisual;if(n.dataset.item)return 'item:'+n.dataset.item;if(n.dataset.noteId)return 'note:'+n.dataset.noteId;if(n.dataset.chatKey)return 'chat:'+n.dataset.chatKey;if(n.dataset.section)return 'section:'+n.dataset.section;
   const action=n.dataset.action||n.dataset.webAction||n.dataset.control;if(action)return n.tagName+':'+action+':'+['id','view','mode','type','field','date','index','kind','count','theme','color','point'].map(k=>n.dataset[k]||'').join('|');
   if(n.hasAttribute('aria-label'))return n.tagName+':label:'+n.getAttribute('aria-label');if(/^(INPUT|TEXTAREA|SELECT)$/.test(n.tagName))return n.tagName+':name:'+n.name;return '';
  }
@@ -42,6 +42,7 @@ export function installMotion(){
  function patch(a,b,preserveInput=false){
   if(a.nodeType===3){if(a.data!==b.data)a.data=b.data;return;}if(a.nodeType!==1)return;
   // Most rows are unchanged. Compare in native DOM code before walking attributes/children in JS.
+  if(a.dataset.preserveVisual&&a.dataset.preserveVisual===b.dataset.preserveVisual)return;
   if(!a.dataset.appControl&&a.isEqualNode(b))return;
   const input=/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName),focused=document.activeElement===a;
   if(a.dataset.appControl&&input){for(const name of ['name','aria-label','required','min','max','step','maxlength']){if(b.hasAttribute(name))a.setAttribute(name,b.getAttribute(name));else a.removeAttribute(name);}if(a.tagName==='SELECT')children(a,b,preserveInput);if(!focused&&!preserveInput&&a.value!==b.value){a.value=b.value;a.dispatchEvent(new Event('shixu-control-refresh'));}return;}

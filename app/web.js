@@ -1,9 +1,10 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.2-download';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.3-xiaoshi';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.2-download';
-import {installAccount} from './account-ui.mjs?v=0.5.2-download';
-import {installMotion} from './motion.mjs?v=0.5.2-download';
-import {installControls} from './controls.mjs?v=0.5.2-download';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.3-xiaoshi';
+import {installAccount} from './account-ui.mjs?v=0.5.3-xiaoshi';
+import {installMotion} from './motion.mjs?v=0.5.3-xiaoshi';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs';
+import {installControls} from './controls.mjs?v=0.5.3-xiaoshi';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -15,7 +16,8 @@ let pair=null,expired=false;
 let busy=false,applying=false,lastSync=0,status='未登录 · 本机保存',paused=localStorage.getItem('shixu-sync-paused')==='true';
 let messages=[];try{messages=JSON.parse(sessionStorage.getItem('shixu-chat')||'[]');if(!Array.isArray(messages))messages=[];}catch{}
 let chatDraft='';let assistantOpen=false;let chatSequence=0;const chatKeys=new WeakMap();const chatKey=m=>{if(!chatKeys.has(m))chatKeys.set(m,++chatSequence);return chatKeys.get(m)};
-const column=document.createElement('aside');column.className='web-assistant';column.setAttribute('aria-label','拾序助手');$('.workspace').append(column);
+const column=document.createElement('aside');column.className='web-assistant';column.setAttribute('aria-label','小拾助手');$('.workspace').append(column);
+const assistantVisuals=window.ShixuAssistantVisuals=installAssistantOrbs();
 const saveMessages=()=>sessionStorage.setItem('shixu-chat',JSON.stringify(messages.slice(-50)));
 const source=i=>`<a href="#record-${escape(i.id)}" data-web-action="source" data-id="${escape(i.id)}">↗ ${escape(i.title)}</a>`;
 function answer(text){
@@ -27,16 +29,19 @@ function answer(text){
  values=values.filter(i=>/已完成/.test(text)?i.status==='done':i.status!=='done');
  if(from)values=values.filter(i=>i.type==='event'?i.planDate<=to&&i.endDate>=from:[i.planDate,i.dueDate,i.remindAt?.slice(0,10)].some(d=>d&&d>=from&&d<=to)||from===today&&i.dueDate&&i.dueDate<today);
  if(/待办|事项|本周|今天|日程|事件|便签|已完成/.test(text))return `<strong>找到 ${values.length} 条${from?'（'+from+' 至 '+to+'）':''}</strong>`+(values.length?'<table><thead><tr><th>原始记录</th><th>日期 / 时间</th><th>分类</th></tr></thead><tbody>'+values.slice(0,100).map(i=>`<tr><td>${source(i)}</td><td>${escape((i.planDate||i.dueDate||'待安排')+' '+(i.startTime||''))}</td><td>${escape(state.categories.find(c=>c.id===i.category)?.name||'未分类')}</td></tr>`).join('')+'</tbody></table>':'<p>可新建事项，或切换查询时间范围。</p>')+(values.length>100?'<p>仅显示前100条，请缩小范围。</p>':'');
- return '我可以查询今天、本周、已完成事项，检查时间冲突，或帮你拆解待办和安排日程。点击下方快捷操作生成候选，更改由你确认。当前使用本地规则，没有调用云模型。';
+ return '我可以查询今天、本周、已完成事项，检查时间冲突，或帮你拆解待办和安排日程。直接描述需求即可生成候选，更改由你确认。当前使用本地规则，没有调用云模型。';
 }
-const actions=()=>`<div class="sync-actions"><button class="btn sm" data-web-action="plan">拆待办</button><button class="btn sm" data-web-action="schedule">排日程</button><button class="btn sm" data-web-action="conflicts">查冲突</button></div>`;
-function chatHTML(full=false){return `<div class="spread"><h3>拾序助手</h3><div class="row"><button class="icon-btn" aria-label="清空聊天" data-web-action="clear-chat">↺</button>${full?'':'<button class="icon-btn" aria-label="关闭助手" data-web-action="close-assistant">×</button>'}</div></div><p class="tiny muted">跨页面查询 · 本地规则 · 修改先确认</p><div class="web-chat" aria-live="polite">${messages.map(m=>`<div data-chat-key="${chatKey(m)}" class="chat-message ${m.role==='user'?'user':''}">${m.role==='user'?escape(m.text):m.html}</div>`).join('')||'<div class="chat-message">试着问“本周待办”或“检查日程冲突”。回复里的事项可以直接定位到日历。</div>'}</div>${actions()}<form class="web-chat-form"><textarea class="chat-input" aria-label="助手提问" placeholder="查询事项，或者检查时间冲突…" rows="3" required>${escape(chatDraft)}</textarea><div class="spread" style="margin-top:10px"><span class="tiny muted">Ctrl+Enter 发送</span><button class="btn primary" type="submit">发送 ↑</button></div></form>`;}
-function renderChat(follow=false){for(const [host,full]of [[column,false],[$('.web-assistant-main'),true]]){if(!host)continue;const chat=host.querySelector('.web-chat'),atBottom=!chat||chat.scrollHeight-chat.scrollTop-chat.clientHeight<64,scroll=chat?.scrollTop||0,lastHeight=Number(chat?.dataset.lastHeight||chat?.scrollHeight||0);const draft=host.querySelector('textarea')?.value;window.ShixuMotion.renderRegion(host,chatHTML(full),{preserveInput:true,layout:false});if(draft!==undefined)host.querySelector('textarea').value=draft;const next=host.querySelector('.web-chat');if(follow||atBottom)next.scrollTop=next.scrollHeight;else{next.scrollTop=scroll;if(chat&&next.scrollHeight>lastHeight){let notice=host.querySelector('.chat-new');if(!notice){notice=document.createElement('button');notice.className='btn sm chat-new';notice.dataset.webAction='chat-latest';notice.textContent='有新消息 ↓';host.querySelector('.web-chat-form').before(notice);}}}next.dataset.lastHeight=next.scrollHeight;}}
-function send(text){if(!text.trim())return;const record=!/查询|查看|冲突|已完成/.test(text)&&(/记下|记录|添加|新建|创建|拆解/.test(text)||/(今天|明天|后天|周[一二三四五六日天]).*(有|要).*(活动|会议|开会|评审|预约)/.test(text));messages.push({role:'user',text:text.trim()},{role:'assistant',html:record?'已准备候选，<strong>尚未创建</strong>。请在下方提案工作台核对后确认。日程默认估算为 1 小时；缺失日期或开始时间的候选需要补充。':answer(text.trim())});messages=messages.slice(-50);saveMessages();chatDraft='';document.querySelectorAll('.web-chat-form textarea').forEach(e=>e.value='');if(record)app.prepare(text.trim());renderChat(true);}
+function chatHTML(full=false){
+ const proposal=full?app.assistantProposal?.():'';
+ const header=full?`<div class="orb-stage">${orbMarkup()}<h1 data-assistant-name>小拾</h1></div>`:`<div class="spread assistant-brand"><div class="assistant-identity">${orbMarkup()}<h3>小拾</h3></div><button class="icon-btn" aria-label="关闭助手" data-web-action="close-assistant">×</button></div>`;
+ return `${header}<div class="web-chat" role="log" aria-label="与小拾的对话" aria-live="polite">${messages.map(m=>`<div data-chat-key="${chatKey(m)}" class="chat-message ${m.role==='user'?'user':''}">${m.role==='user'?escape(m.text):m.html}</div>`).join('')}${proposal?`<div class="chat-message assistant-proposal" data-chat-key="proposal"><div id="ai-results">${proposal}</div></div>`:''}</div><form class="web-chat-form"><textarea class="chat-input" aria-label="助手提问" placeholder="和小拾说说，接下来想做什么…" rows="2" required>${escape(chatDraft)}</textarea><div class="spread composer-tools"><button class="icon-btn" type="button" aria-label="清空聊天" data-web-action="clear-chat">↺</button><div class="row"><span class="tiny muted composer-hint">Ctrl+Enter</span><button class="btn primary" type="submit" aria-label="发送">发送 ↑</button></div></div></form>`;
+}
+function renderChat(follow=false){for(const [host,full]of [[column,false],[$('.web-assistant-main'),true]]){if(!host)continue;const chat=host.querySelector('.web-chat'),atBottom=!chat||chat.scrollHeight-chat.scrollTop-chat.clientHeight<64,scroll=chat?.scrollTop||0,lastHeight=Number(chat?.dataset.lastHeight||chat?.scrollHeight||0);const draft=host.querySelector('textarea')?.value;window.ShixuMotion.renderRegion(host,chatHTML(full),{preserveInput:true,layout:false});if(draft!==undefined)host.querySelector('textarea').value=draft;const next=host.querySelector('.web-chat');if(follow||atBottom)next.scrollTop=next.scrollHeight;else{next.scrollTop=scroll;if(chat&&next.scrollHeight>lastHeight){let notice=host.querySelector('.chat-new');if(!notice){notice=document.createElement('button');notice.className='btn sm chat-new';notice.dataset.webAction='chat-latest';notice.textContent='有新消息 ↓';host.querySelector('.web-chat-form').before(notice);}}}next.dataset.lastHeight=next.scrollHeight;}assistantVisuals.refresh();}
+function send(text){if(!text.trim())return;const record=!/查询|查看|冲突|已完成/.test(text)&&(/记下|记录|添加|新建|创建|拆解/.test(text)||/(今天|明天|后天|周[一二三四五六日天]).*(有|要).*(活动|会议|开会|评审|预约)/.test(text));messages.push({role:'user',text:text.trim()},{role:'assistant',html:record?'已准备候选，<strong>尚未创建</strong>。请在回复气泡中核对后确认。日程默认估算为 1 小时；缺失日期或开始时间的候选需要补充。':answer(text.trim())});messages=messages.slice(-50);saveMessages();chatDraft='';document.querySelectorAll('.web-chat-form textarea').forEach(e=>e.value='');if(record)app.prepare(text.trim());renderChat(true);}
 app.hideAssistant=()=>{window.ShixuMotion.assistant(false);assistantOpen=false;$('.workspace').classList.remove('assistant-open');};
 function showAssistant(){if(matchMedia('(max-width:899px)').matches){app.nav('ai');return;}if($('#main .web-assistant-main')){app.hideAssistant();renderChat();return;}assistantOpen=!assistantOpen;$('.workspace').classList.toggle('assistant-open',assistantOpen);renderChat();window.ShixuMotion.assistant(assistantOpen);}
-const renderAI=window.renderAI;
-window.renderAI=function(){app.hideAssistant();return `<div class="page-head"><h1>全局助手</h1></div><section class="card card-pad web-assistant-main">${chatHTML(true)}</section><details style="margin-top:24px" id="planning-details"><summary class="text-btn">待办拆解与提案</summary>${renderAI()}</details>`;};
+window.renderAI=function(){app.hideAssistant();return `<section class="web-assistant-main assistant-page" aria-label="小拾助手">${chatHTML(true)}</section>`;};
+app.editAssistantDraft=text=>{chatDraft=text;renderChat();const input=$('.web-assistant-main textarea');if(input){input.value=text;input.focus();}};
 const accounts=installAccount(app,{chat(value){if(value!==undefined){messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
 pair=accounts.session;if(pair)status='已登录 · '+pair.username;
 app.syncSettings=()=>`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`;
@@ -64,9 +69,9 @@ document.addEventListener('click',async e=>{
  const button=e.target.closest('[data-web-action]');if(!button)return;const action=button.dataset.webAction;e.preventDefault();
  try{if(await accounts.handle(action))return;switch(action){
  case'assistant':app.nav('ai');break;case'assistant-panel':showAssistant();break;case'close-assistant':app.hideAssistant();break;
- case'clear-chat':messages=[];saveMessages();renderChat();break;
+ case'clear-chat':messages=[];app.clearAssistantProposal?.();saveMessages();renderChat();break;
  case'source':app.hideAssistant();app.locate(button.dataset.id);break;
- case'plan':app.plan();$('#planning-details').open=true;$('#ai-input')?.focus();break;
+ case'plan':app.plan();app.editAssistantDraft('帮我拆解待办：');break;
  case'schedule':app.schedule();break;case'conflicts':send('检查日程冲突');break;
  case'sync':if(paused)accounts.open();else await sync();break;
  case'keep-local':case'keep-cloud':if(!await window.ShixuConfirm('处理前请导出两端备份。确认保留'+(action==='keep-cloud'?'云端':'本机')+'版本？'))break;const remote=JSON.parse(localStorage.getItem('shixu-sync-remote'));if(!remote)throw Error('没有保留的云端版本');if(action==='keep-cloud'){applying=true;try{app.applyDoc(remote);}finally{applying=false;}}localStorage.setItem('shixu-sync-baseline',JSON.stringify(remote));paused=false;localStorage.removeItem('shixu-sync-paused');await sync();accounts.open();break;

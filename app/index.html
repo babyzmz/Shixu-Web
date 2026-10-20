@@ -54,7 +54,7 @@
 @media(max-width:1200px){.today-categories{gap:10px;flex-wrap:wrap}.today-category-chip{padding:7px 9px}}
 @media(max-width:640px){.today-categories{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px;margin:0 0 18px}.today-category-options{grid-column:1/-1;grid-row:2;gap:5px}.today-category-add{grid-column:2;grid-row:1;min-height:28px!important}.today-category-chip{min-height:38px;padding:7px 10px}.today-category-name{max-width:145px}.today-list-tools{width:100%;justify-content:space-between}.today-section-toolbar{gap:10px}.today-group-switch button{min-height:32px}.today-category-heading .group-add{min-height:32px}}
 </style>
-<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./controls.css?v=0.5.2-download"><link rel="stylesheet" href="./web.css?v=0.5.2-download"><meta name="robots" content="noindex,nofollow"></head>
+<meta name="referrer" content="no-referrer"><meta name="description" content="拾序网页工作台：待办、日程、便签与个人设备加密同步。"><link rel="icon" href="./icon.svg"><link rel="manifest" href="./manifest.webmanifest"><link rel="stylesheet" href="./controls.css?v=0.5.3-xiaoshi"><link rel="stylesheet" href="./web.css?v=0.5.3-xiaoshi"><meta name="robots" content="noindex,nofollow"></head>
 <body>
 <div id="app"><aside class="sidebar" id="sidebar"></aside><div class="workspace"><header class="topbar" id="topbar"></header><main id="main" aria-label="工作区"></main></div></div>
 <div class="nav-scrim" id="nav-scrim"></div><nav class="mobile-nav" id="mobile-nav" aria-label="移动端导航"></nav>
@@ -431,8 +431,8 @@ case 'time-slot':{const r=el.getBoundingClientRect(),m=Math.max(480,Math.min(117
 case 'ai-capture':{const text=$('#quick-input')?.value.trim();if(text)aiText=text;navTo('ai');if(text)analyzeAI();break}
 case 'ai-analyze':analyzeAI();break;
 case 'ai-confirm':confirmAI();break;
-case 'ai-input-focus':$('#ai-input')?.focus();break;
-case 'ai-reset':aiAnalyzed=false;aiCommitted=false;aiDrafts=[];render();$('#ai-input')?.focus();break;
+case 'ai-input-focus':window.ShixuWeb.editAssistantDraft?.(aiText);break;
+case 'ai-reset':aiAnalyzed=false;aiCommitted=false;aiDrafts=[];render();window.ShixuWeb.editAssistantDraft?.('');break;
 case 'notes-to-ai':notesToAI();break;
 case 'pick-note-ai':{const n=item(d.id);if(!n)return;aiText=n.body;closeModal(true);navTo('ai');aiDrafts=splitRequirements(aiText).map(x=>({...x,sourceId:n.id}));aiAnalyzed=true;aiCommitted=false;render();break}
 case 'schedule':openSchedule();break;
@@ -503,7 +503,9 @@ window.ShixuWeb={
  locate:(id,date)=>{const i=item(id);if(!i)return toast('原记录已不存在');const d=date||calendarDate(i);if(!d)return openEditor(id);view='calendar';categoryFilter='';kindFilter='all';calendarMode='day';calendarAnchor=d;render();requestAnimationFrame(()=>{const e=document.querySelector('[data-id="'+CSS.escape(id)+'"]');if(e){e.classList.add('source-highlight');e.scrollIntoView({block:'center'});setTimeout(()=>e.classList.remove('source-highlight'),2500);}});},
  focus:()=>{if(focusState.id&&item(focusState.id))return openFocus(focusState.id);modalKind='focus-list';openModal('选择专注待办',activeTasks().length?'<div class="task-list">'+sorted(activeTasks()).map(i=>'<button class="btn focus-pick" data-action="focus" data-id="'+h(i.id)+'">'+h(i.title)+'</button>').join('')+'</div>':empty('没有待处理待办','','new','新建待办'),btn('关闭','close-modal','','btn'));},
  plan:()=>{navTo('ai');}, schedule:openSchedule, conflicts:()=>{const values=state.items.filter(i=>i.status!=='done'&&(i.type==='event'||i.type==='task'&&i.startTime&&i.planDate));const found=[];for(let a=0;a<values.length;a++)for(let b=a+1;b<values.length;b++){const x=values[a],y=values[b];const start=i=>new Date(i.planDate+'T'+i.startTime),end=i=>i.type==='event'?new Date(i.endDate+'T'+i.endTime):new Date(start(i).getTime()+i.duration*60000);if(start(x)<end(y)&&start(y)<end(x))found.push([x,y]);}return found;},
- prepare:text=>{aiText=text;navTo('ai');aiDrafts=splitRequirements(text).map(d=>({...d,type:/活动|会议|开会|评审|预约/.test(d.source)?'event':d.type,title:d.title.replace(/^(有|要|帮我|记下)\s*/,''),category:state.categories.some(c=>c.id===d.category)?d.category:state.categories[0].id}));aiAnalyzed=true;aiCommitted=false;render();document.querySelector('#planning-details').open=true;},
+ prepare:text=>{aiText=text;navTo('ai');aiDrafts=splitRequirements(text).map(d=>({...d,type:/活动|会议|开会|评审|预约/.test(d.source)?'event':d.type,title:d.title.replace(/^(有|要|帮我|记下)\s*/,''),category:state.categories.some(c=>c.id===d.category)?d.category:state.categories[0].id}));aiAnalyzed=true;aiCommitted=false;render();},
+ assistantProposal:()=>aiAnalyzed?renderAIResults():'',
+ clearAssistantProposal:()=>{aiAnalyzed=false;aiCommitted=false;aiDrafts=[];},
  openEditor, syncSettings:()=>'',hideAssistant:()=>{}
 };
 matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(state.settings.theme==='system')applyTheme()});
@@ -513,6 +515,6 @@ const modalViewport=()=>{const v=window.visualViewport;document.documentElement.
 window.visualViewport?.addEventListener('resize',modalViewport);window.visualViewport?.addEventListener('scroll',modalViewport);modalViewport();
 const modalObserver=new MutationObserver(()=>{document.body.classList.toggle('modal-open',!!document.querySelector('#modal-root .overlay'))});modalObserver.observe(document.getElementById('modal-root'),{childList:true});
 window.addEventListener('resize',()=>{const mobile=matchMedia('(max-width:899px)').matches;if(view==='calendar'&&!!document.querySelector('.agenda-selector')!==mobile)render()});
-</script><script type="module" src="./web.js?v=0.5.2-download"></script></body></html>
+</script><script type="module" src="./web.js?v=0.5.3-xiaoshi"></script></body></html>
 
 

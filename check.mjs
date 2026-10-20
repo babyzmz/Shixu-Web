@@ -1,7 +1,7 @@
 import fs from 'node:fs';import vm from 'node:vm';import path from 'node:path';
 const root=process.argv[2]||'.',staged=fs.existsSync(path.join(root,'app/index.html')),app=path.join(root,staged?'app':'.');
 for(const match of fs.readFileSync(path.join(app,'index.html'),'utf8').matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g))new vm.Script(match[1]);
-for(const file of ['web.js','motion.mjs','controls.mjs','controls.css','sync.mjs','account.mjs','account-ui.mjs','web.css','icon.svg','manifest.webmanifest','sw.js'])if(!fs.statSync(path.join(app,file)).isFile())throw Error('Missing '+file);
+for(const file of ['assistant-orb.mjs','live-orb.mjs','web.js','motion.mjs','controls.mjs','controls.css','sync.mjs','account.mjs','account-ui.mjs','web.css','icon.svg','manifest.webmanifest','sw.js'])if(!fs.statSync(path.join(app,file)).isFile())throw Error('Missing '+file);
 for(const file of ['web.js','motion.mjs','controls.mjs','sync.mjs','account.mjs','account-ui.mjs']){
  for(const match of fs.readFileSync(path.join(app,file),'utf8').matchAll(/(?:from\s*|import\s*)['"](\.\/[^'"]+)['"]/g))
   if(!fs.existsSync(path.join(app,match[1].split(/[?#]/)[0])))throw Error('Missing module imported by '+file+': '+match[1]);
