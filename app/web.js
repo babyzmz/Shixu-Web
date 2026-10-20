@@ -1,7 +1,7 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.19-2';
-import {installAccount} from './account-ui.mjs?v=0.4.19-2';
-import {installMotion} from './motion.mjs?v=0.4.19-2';
-import {installControls} from './controls.mjs?v=0.4.19-2';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.20-1';
+import {installAccount} from './account-ui.mjs?v=0.4.20-1';
+import {installMotion} from './motion.mjs?v=0.4.20-1';
+import {installControls} from './controls.mjs?v=0.4.20-1';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
