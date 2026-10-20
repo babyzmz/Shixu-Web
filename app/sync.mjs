@@ -15,8 +15,16 @@ export async function decrypt(envelope, token) {
 export const canonical = value => JSON.stringify(value, (k,v)=>k==='kindLabel'?undefined:v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.entries(v).sort(([a],[b])=>a.localeCompare(b))):v);
 export function merge(before, ours, theirs) {
  const rows=kind=>{const b=new Map(before[kind].map(x=>[x.id,x])),l=new Map(ours[kind].map(x=>[x.id,x])),r=new Map(theirs[kind].map(x=>[x.id,x]));const values=[];
- for(const id of new Set([...b.keys(),...l.keys(),...r.keys()])){const bv=canonical(b.get(id)),lv=canonical(l.get(id)),rv=canonical(r.get(id));if(lv!==bv&&rv!==bv&&lv!==rv){const e=Error('同一记录被两端修改或一端删除。原记录保留，请处理同步冲突');e.conflict=true;throw e;}const value=lv!==bv?l.get(id):r.get(id);if(value)values.push(value);}return values;};
- const result={schema:1,items:rows('items'),categories:rows('categories')};
+ for(const id of new Set([...b.keys(),...l.keys(),...r.keys()])){const bv=canonical(b.get(id)),lv=canonical(l.get(id)),rv=canonical(r.get(id));if(lv!==bv&&rv!==bv&&lv!==rv){
+  const old=b.get(id),left=l.get(id),right=r.get(id);
+  const content=v=>canonical({...v,dailyTarget:v.dailyTarget||0,pointEvent:!!v.pointEvent,completions:[],updatedAt:''});
+  if(kind==='items'&&old&&left&&right&&content(old)===content(left)&&content(old)===content(right)){
+   const maps=[old,left,right].map(v=>new Map((v.completions||[]).map(e=>[e.id,e]))),completionRows=[];
+   for(const key of new Set(maps.flatMap(m=>[...m.keys()]))){const [base,local,remote]=maps.map(m=>m.get(key));if(canonical(local)!==canonical(base)&&canonical(remote)!==canonical(base)&&canonical(local)!==canonical(remote)){const e=Error('同一次完成记录被两端修改，请处理同步冲突');e.conflict=true;throw e;}const entry=canonical(local)!==canonical(base)?local:remote;if(entry)completionRows.push(entry);}
+   values.push({...left,completions:completionRows,updatedAt:[left.updatedAt,right.updatedAt].sort().at(-1)});continue;
+  }
+  const e=Error('同一记录被两端修改或一端删除。原记录保留，请处理同步冲突');e.conflict=true;throw e;}const value=lv!==bv?l.get(id):r.get(id);if(value)values.push(value);}return values;};
+ const result={schema:Math.max(before.schema||1,ours.schema||1,theirs.schema||1),items:rows('items'),categories:rows('categories')};
  if(result.items.some(x=>!result.categories.some(c=>c.id===x.category))) {const e=Error('分类与事项有并发冲突，请保留两端备份后处理');e.conflict=true;throw e;}return result;
 }
 export const empty = () => ({schema:1,items:[],categories:[]});

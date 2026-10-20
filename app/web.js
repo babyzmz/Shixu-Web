@@ -1,6 +1,6 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.16-1';
-import {installAccount} from './account-ui.mjs?v=0.4.16-1';
-import {installMotion} from './motion.mjs?v=0.4.16-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.17-1';
+import {installAccount} from './account-ui.mjs?v=0.4.17-1';
+import {installMotion} from './motion.mjs?v=0.4.17-1';
 installMotion();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
