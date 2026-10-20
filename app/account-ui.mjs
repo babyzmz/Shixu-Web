@@ -1,9 +1,9 @@
 import {credentials,authProof,unwrapPassword,newMaster,newRecovery,validatePassword} from './account.mjs';
 import {authToken,empty} from './sync.mjs';
-const endpoint='https://shixu-sync.zmz1998.workers.dev';
+const endpoint='https://api.fairyllm.com';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function installAccount(app,hooks){
- let account=null,busy=false;try{account=JSON.parse(localStorage.getItem('shixu-account'));}catch{}
+ let account=null,busy=false;try{account=JSON.parse(localStorage.getItem('shixu-account'));if(account?.endpoint==='https://shixu-sync.zmz1998.workers.dev'){account.endpoint=endpoint;localStorage.setItem('shixu-account',JSON.stringify(account));}}catch{}
  const owner=()=>localStorage.getItem('shixu-account-owner')||'';
  const keys=['shixu-sync-baseline','shixu-sync-remote','shixu-sync-paused'];
  const cache=()=>{if(owner())localStorage.setItem('shixu-account-cache:'+owner(),JSON.stringify({state:app.getState(),meta:keys.map(k=>localStorage.getItem(k)),chat:hooks.chat()}));};

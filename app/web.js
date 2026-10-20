@@ -1,12 +1,12 @@
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.15-1';
-import {installAccount} from './account-ui.mjs?v=0.4.15-1';
-import {installMotion} from './motion.mjs?v=0.4.15-1';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.4.16-1';
+import {installAccount} from './account-ui.mjs?v=0.4.16-1';
+import {installMotion} from './motion.mjs?v=0.4.16-1';
 installMotion();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
 app.sameDoc=(a,b)=>canonical(a)===canonical(b);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const DOWNLOAD='https://fairyllm.com/shixu/download/';
-const DEFAULT_ENDPOINT='https://shixu-sync.zmz1998.workers.dev';
+const DEFAULT_ENDPOINT='https://api.fairyllm.com';
 let pair=null,expired=false;
 let busy=false,applying=false,lastSync=0,status='未登录 · 本机保存',paused=localStorage.getItem('shixu-sync-paused')==='true';
 let messages=[];try{messages=JSON.parse(sessionStorage.getItem('shixu-chat')||'[]');if(!Array.isArray(messages))messages=[];}catch{}
