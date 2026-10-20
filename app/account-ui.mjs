@@ -33,7 +33,7 @@ export function installAccount(app,hooks){
   action=action.slice(8);if(action==='open'){open();return true;}
   const read=name=>document.getElementById('account-'+name)?.value||'';
   const username=read('username'),password=read('password'),next=read('next'),current=read('current');
-  busy=true;hooks.message('正在处理账户…');document.querySelectorAll('[data-web-action^="account-"]').forEach(e=>e.disabled=true);
+  busy=true;hooks.message('正在处理账户…');document.querySelectorAll('.account-dialog [data-web-action^="account-"]').forEach(e=>e.disabled=true);
   try{
    if(action==='logout'){
     try{await auth('logout',{},account.session);}catch{}cache();account=null;localStorage.removeItem('shixu-account');localStorage.removeItem('shixu-account-owner');keys.forEach(k=>localStorage.removeItem(k));app.applyScope();hooks.chat([]);hooks.reset();hooks.changed(null);

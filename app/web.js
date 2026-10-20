@@ -1,12 +1,12 @@
-import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.8-settings-pages';
+import {reminderOccurrences,reminderLocal} from './creation-model.mjs?v=0.5.9-my-page';
 window.ShixuCreation={reminderOccurrences,reminderLocal};
-import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.8-settings-pages';
-import {installAccount} from './account-ui.mjs?v=0.5.8-settings-pages';
-import {installMotion} from './motion.mjs?v=0.5.8-settings-pages';
-import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.8-settings-pages';
-import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.8-settings-pages';
-import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.8-settings-pages';
-import {installControls} from './controls.mjs?v=0.5.8-settings-pages';
+import {encode,decode,encrypt,decrypt,merge,canonical,empty,parsePair,authToken} from './sync.mjs?v=0.5.9-my-page';
+import {installAccount} from './account-ui.mjs?v=0.5.9-my-page';
+import {installMotion} from './motion.mjs?v=0.5.9-my-page';
+import {askCloud,prepareAction,renderAssistantText,activityForQuestion} from './assistant-cloud.mjs?v=0.5.9-my-page';
+import {actionRevision,actionDetails} from './assistant-actions.mjs?v=0.5.9-my-page';
+import {orbMarkup,installAssistantOrbs} from './assistant-orb.mjs?v=0.5.9-my-page';
+import {installControls} from './controls.mjs?v=0.5.9-my-page';
 window.ShixuMotion=installMotion();
 installControls();
 const app=window.ShixuWeb, $=s=>document.querySelector(s);
@@ -72,14 +72,15 @@ window.renderAI=function(){app.hideAssistant();return `<section class="web-assis
 app.editAssistantDraft=text=>{chatDraft=text;renderChat();const input=$('.web-assistant-main textarea');if(input){input.value=text;input.focus();}};
 const accounts=installAccount(app,{chat(value){if(value!==undefined){chatEpoch++;chatAbort?.abort();chatPending=false;chatAbort=null;assistantVisuals.setState('idle');messages=value;saveMessages();renderChat();}return messages;},reset(){paused=localStorage.getItem('shixu-sync-paused')==='true';expired=false;},changed(value){pair=value;expired=false;status=value?'已登录 · '+value.username:'未登录 · 本机保存';app.render();},busy:()=>busy,status:()=>status,paused:()=>paused,expired:()=>expired,message(text){status=text;repaintStatus();},sync});
 pair=accounts.session;if(pair)status='已登录 · '+pair.username;
+app.myProfile=()=>({username:pair?.username||'',signedIn:!!pair&&!expired,expired:!!pair&&expired,status:expired?'登录已过期，请重新登录':status});
 app.syncSettings=(section)=>section==='account'?`<div class="settings-row"><div><h3>账户与同步</h3><p>${escape(pair?.username||'未登录')}</p></div><button class="btn sm" data-web-action="account-open">${pair?'管理账户':'登录账户'}</button></div>`:`<div class="settings-row"><div><h3>小拾模型</h3><p>DeepSeek V4.1 Flash · 登录后可用</p><p class="tiny">云端密钥由服务端保管，首次发送前授权；改动先确认。可随时切回本机查询。</p></div><div class="sync-actions"><button class="btn sm" data-web-action="assistant-mode">${cloudMode&&pair?'切换本机查询':'启用云端小拾'}</button>${pair?'<button class="btn ghost sm" data-web-action="assistant-revoke">撤销数据发送授权</button>':''}</div></div>`;
 window.openHelp=()=>window.location.href='https://fairyllm.com/shixu/help/';
-function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state').forEach(e=>e.textContent=status);}
+function repaintStatus(){document.querySelectorAll('.sync-indicator,#sync-state,.my-sync-status').forEach(e=>e.textContent=status);const badge=$('.my-profile-status');if(badge)badge.textContent=expired?'需重新登录':pair?'已登录':'未登录';const control=$('.my-account-action');if(control)control.textContent=expired?'重新登录':pair?'管理账户':'登录 / 注册';}
 window.addEventListener('shixu-render',()=>{
- const profile=$('.profile-name');if(profile)profile.textContent=pair?.username||'我的空间';
+ const profile=$('.profile-user');if(profile)profile.textContent=pair?.username||'个人信息与设置';
  const aside=$('.today-side');if(aside&&!aside.querySelector('.mini-note')){const note=document.createElement('section');note.className='card mini-note';note.innerHTML='<div class="spread"><h3>随手记</h3><button class="icon-btn" data-action="new-note" aria-label="记一张便签">'+window.ic('plus')+'</button></div><button class="btn ghost" data-action="new-note">记一张便签</button>';aside.insertBefore(note,aside.querySelector('.desktop-peek'));}
- const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-web-action="account-open" title="打开账户">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载拾序" rel="noopener noreferrer">${window.ic('download')}<span>下载</span></a>`;header.prepend(links);}
- const profileButton=$('.profile-name');if(profileButton){const entry=document.createElement('button');entry.className='text-btn account-entry';entry.dataset.webAction='account-open';entry.textContent=pair?.username||'登录账户';profileButton.replaceWith(entry);}
+ const header=$('.header-right');if(header&&!header.querySelector('.web-download')){header.querySelector('.save-state')?.remove();header.querySelector('.separator')?.remove();const links=document.createElement('div');links.className='row web-header-tools';links.innerHTML=`<button class="sync-indicator" data-action="nav" data-view="my" title="打开我的">${escape(status)}</button><a class="btn web-download" href="${DOWNLOAD}" aria-label="下载拾序" rel="noopener noreferrer">${window.ic('download')}<span>下载</span></a>`;header.prepend(links);}
+
  if(assistantOpen&&($('#main .web-assistant-main')||matchMedia('(max-width:899px)').matches))app.hideAssistant();renderChat();
 });
 async function responseJSON(response){const reader=response.body.getReader();let length=0;const chunks=[];while(true){const {value,done}=await reader.read();if(done)break;length+=value.length;if(length>1_600_000){reader.cancel();throw Error('同步响应过大');}chunks.push(value);}const bytes=new Uint8Array(length);let p=0;for(const c of chunks){bytes.set(c,p);p+=c.length;}return JSON.parse(new TextDecoder().decode(bytes));}
