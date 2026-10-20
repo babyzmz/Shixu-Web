@@ -6,16 +6,23 @@
   // Chinese lives in the HTML; English replaces tagged content so static pages stay readable without JS.
   const go=text=>text+' <span aria-hidden="true">↗</span>',down=text=>text+' <span aria-hidden="true">↓</span>';
   const en={
+    'platform.choose':'Choose a platform','platform.downloads':'Platform downloads','platform.windows':'Windows','platform.android':'Android','platform.soon':'Coming soon','platform.available':'Available now','platform.download':'Download','platform.testDownload':'Download beta',
+    'platform.windows.version':'0.4.22 · x64 · 84.6 MiB','platform.windows.description':'Native desktop widgets, tray reminders and a global assistant.','platform.windows.requirements':'Windows 10 2004+ / Windows 11<br>ZIP archive. Extract, then run.','platform.windows.downloadLabel':'Download for Windows',
+    'platform.android.version':'0.2.1 · Small-group beta · 3.7 MiB','platform.android.description':'Your workbench on phones and tablets. Capture a thought and keep going.','platform.android.requirements':'Android 7+ · Recent System WebView<br>APK package. Allow installation from this source.','platform.android.downloadLabel':'Download Android beta',
+    'platform.ios.version':'Future platform','platform.ios.description':'Planned for iPhone and iPad. Not available to download yet.','platform.ios.requirements':'No app package released yet.<br>Use the web workbench for now.',
+    'platform.macos.version':'Future platform','platform.macos.description':'Planned for Mac. Not available to download yet.','platform.macos.requirements':'No app package released yet.<br>Use the web workbench for now.',
+    'devices.android.h':'Android phones and tablets','devices.android.p':'Capture a task, check your calendar and continue with the same account. Optional local reminders and system calendar connection.','devices.android.a':go('Choose Android'),
+    'android.install.h':'Android.<br>Install and start capturing.','android.install.p':'Open the downloaded APK and allow installation from this source when prompted. Sign in to the same Fairy account to sync items and categories.',
     'android.h':'Shixu,<br>on your phone.',
     'android.p':'Android 0.2.1 small-group test build · about 4 MB. The shared web workbench with account sync, optional system calendar integration and local reminders.',
     'android.download':down('Download Android test build'),
-    'android.note':'Android 7+ with a recent System WebView. Enable background calendar sync, notifications and unrestricted battery access in settings. Verified with Android 16 emulator lock-screen Doze; vendor phones still need testing. Force-stop and network loss interrupt the connection.',
+    'android.note':'A recent System WebView is required. Enable reminders and lock-screen sync in settings, and allow notifications and background activity. Network loss or force-stop interrupts sync.',
     'home.title':'Shixu — Pick up the pieces. Shape your day.',
     'home.description':'Shixu gathers scattered to-dos, events and notes in one place. Windows desktop widgets and a web workbench keep your plans with you.',
-    'download.title':'Download Shixu — Windows desktop and web workbench',
-    'download.description':'Download the Shixu Windows desktop app or open the web workbench. Check the version, installation steps and device sync guide.',
+    'download.title':'Download Shixu — Windows, Android, iOS and macOS',
+    'download.description':'Get Shixu for Windows and Android, see iOS and macOS availability, or open the web workbench.',
     skip:'Skip to main content',brand:'Shixu','brand.home':'Shixu home','nav.label':'Site navigation',
-    'nav.tour':'Tour','nav.web':go('Web app'),'nav.desktop':'Desktop',
+    'nav.tour':'Tour','nav.web':go('Web app'),'nav.desktop':'Downloads',
     'cta.get':go('Get Shixu'),'cta.getDown':down('Get Shixu'),'cta.windows':down('Download for Windows'),'cta.tryWeb':go('Try the web app first'),'cta.openWeb':go('Open the web app'),
     'hero.l1':'Pick up the pieces.','hero.l2':'Shape your day.',
     'hero.intro':'To-dos, events and notes, all in one place.<br>Keep the next step in sight, and your time for yourself.',
@@ -42,8 +49,8 @@
     'faq.q3':'Does the assistant need an API key?','faq.a3':'Basic lookups, explicit captures and local rule-based scheduling don’t need an API. More advanced cloud model features on desktop require a model and a valid key in settings; model costs depend on the service you choose. The web app currently uses a local rule-based assistant.',
     'faq.q4':'Will I still get reminders after closing the web page?','faq.a4':'Web reminders need the page to stay open. For tray reminders, use the Windows version; notifications aren’t guaranteed while the app is fully closed or the device is asleep.',
     'closing.h':'Give today<br>a clear start.','closing.p':'Begin by writing down one thing.',
-    'footer.download':'Desktop download','footer.web':'Web workbench','footer.home':'Back to home','footer.tagline':'Shixu · A place for everything','footer.sample':'Screens show sample items and contain no user records.',
-    'dl.l1':'Bring Shixu','dl.l2':'to your desktop.','dl.intro':'Native desktop widgets, tray reminders, a global assistant.<br>Your next step, always in sight.',
+    'footer.download':'Downloads','footer.web':'Web workbench','footer.home':'Back to home','footer.tagline':'Shixu · A place for everything','footer.sample':'Screens show sample items and contain no user records.',
+    'dl.l1':'Choose your device.','dl.l2':'Keep your plans close.','dl.intro':'Available for Windows and Android.<br>Choose your usual device, or open the web app.',
     'dl.icon':'Shixu app icon','dl.windows':'Windows','dl.req':'Windows 10 2004 (19041) or later, or Windows 11, on an x64 PC.<br>ZIP archive. Extract, then run.','dl.tryWeb':go('Try the web app first'),
     'dl.previewAlt':'Preview of to-dos, schedule and notes in the dark Shixu workbench','dl.previewCap':'Everything has its place.',
     'install.h':'Extract. Open.<br>Start writing.',
@@ -86,7 +93,7 @@
     }
     if(page){document.title=lang==='en'?en[page+'.title']:head.title;document.querySelector('meta[name="description"]')?.setAttribute('content',lang==='en'?en[page+'.description']:head.description);}
     switcher.textContent=t('lang.switch');switcher.lang=lang==='en'?'zh-CN':'en';switcher.setAttribute('aria-label',t('lang.switchLabel'));
-    const note=document.querySelector('.download-state');if(note)note.textContent=t('download.started');
+    document.querySelectorAll('.download-state').forEach(note=>note.textContent=t('download.started'));
     root.classList.remove('i18n-pending');
   }
   switcher.addEventListener('click',()=>{
@@ -142,6 +149,5 @@
         gsap.fromTo([...details.children].filter(el=>el.tagName!=='SUMMARY'),{opacity:.7,y:4},{opacity:1,y:0,duration:.2,ease:'power2.out',overwrite:true,clearProps:'transform,opacity'});
     }));
   }
-  const download=document.querySelector('[data-download]');
-  if(download)download.addEventListener('click',()=>{let note=document.querySelector('.download-state');if(!note){note=document.createElement('p');note.className='download-state';note.setAttribute('role','status');download.after(note);}note.textContent=t('download.started');});
+  for(const download of document.querySelectorAll('[data-download]'))download.addEventListener('click',()=>{let note=download.parentElement.querySelector('.download-state');if(!note){note=document.createElement('p');note.className='download-state';note.setAttribute('role','status');download.after(note);}note.textContent=t('download.started');});
 })();

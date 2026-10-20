@@ -114,4 +114,3 @@ export function installMotion(){
  function destroy(){disposed=true;settle();for(const c of panelControllers.values())c.abort();panelControllers.clear();abort.abort();toastObserver.disconnect();cancelAnimationFrame(indicatorFrame);cancelAnimationFrame(layoutFrame);cancelAnimationFrame(releaseFrame);clearTimeout(themeTimer);pendingRender=null;groups.clear();root.classList.remove('motion-ready');}listen(window,'pagehide',destroy,{once:true});queueIndicators();
  return{renderRegion,deferRender,openModal,closeModal,control,assistant,layoutChange,theme,stop:settle,destroy,isClosing:()=>closing,stats:()=>({animations:animations.size,springs:springs.size,held:!!held,closing,gesture:!!gesture,indicators:groups.size})};
 }
-
